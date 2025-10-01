@@ -1,0 +1,237 @@
+<?php
+// =================================================================
+// ARQUIVO DE CONFIGURAÇÃO DO BANCO DE DADOS (SQLite) - NomaTV v4.2
+// =================================================================
+// Responsabilidade:
+// 1. Estabelecer a conexão com o banco de dados SQLite.
+// 2. Definir o caminho para o arquivo do banco de dados.
+// 3. Criar todas as tabelas necessárias se elas não existirem.
+// 4. Inserir dados iniciais (admin, configurações) na primeira execução.
+// 
+// 🎯 NOVA ESTRUTURA v4.2: 4 TABELAS APENAS
+// - revendedores (chave mestra: id_revendedor, campo master)
+// - provedores (vinculados via id_revendedor)
+// - client_ids (sempre apontam para id_revendedor final)
+// - auditoria (logs com id_revendedor)
+// =================================================================
+
+// Define o caminho para o arquivo do banco de dados, que ficará na raiz do diretório /api
+$dbPath = __DIR__ . '/../db.db';
+
+try {
+    // Cria uma nova instância de PDO para se conectar ao SQLite
+    $db = new PDO('sqlite:' . $dbPath);
+    
+    // Define atributos para o tratamento de erros e o modo de busca
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    
+    // Habilita o suporte a chaves estrangeiras, essencial para a integridade dos dados
+    $db->exec('PRAGMA foreign_keys = ON;');
+    
+    // Chama a função para verificar e criar as tabelas do sistema
+    createTablesIfNotExist($db);
+    
+} catch (PDOException $e) {
+    // Em caso de falha na conexão, retorna um erro 500 (Internal Server Error)
+    http_response_code(500);
+    // Encerra a execução e envia uma resposta JSON com o erro
+    exit(json_encode(['success' => false, 'error' => 'Erro de conexão com o banco de dados: ' . $e->getMessage()]));
+}
+
+/**
+ * Função principal que orquestra a criação das tabelas.
+ *
+ * @param PDO $db A instância da conexão com o banco de dados.
+ */
+function createTablesIfNotExist(PDO $db) {
+    // Array associativo contendo o nome da tabela e seu respectivo SQL de criação
+    // 🎯 NOVA ESTRUTURA v4.2: APENAS 4 TABELAS
+    $tablesSQL = [
+        'revendedores' => "
+            CREATE TABLE IF NOT EXISTS revendedores (
+                id_revendedor INTEGER PRIMARY KEY,
+                usuario VARCHAR(50) UNIQUE NOT NULL,
+                senha VARCHAR(255) NOT NULL,
+                nome VARCHAR(100) NOT NULL,
+                email VARCHAR(150),
+                master VARCHAR(10) NOT NULL CHECK (master IN ('admin', 'sim', 'nao')),
+                master_de INTEGER,
+                plano VARCHAR(50) DEFAULT 'Básico',
+                valor_ativo DECIMAL(10,2),
+                valor_mensal DECIMAL(10,2),
+                limite_ativos INTEGER DEFAULT 100,
+                ativo BOOLEAN DEFAULT 1,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                
+                FOREIGN KEY (master_de) REFERENCES revendedores(id_revendedor),
+                CHECK ((valor_ativo IS NOT NULL AND valor_mensal IS NULL) OR 
+                       (valor_ativo IS NULL AND valor_mensal IS NOT NULL))
+            )",
+        'provedores' => "
+            CREATE TABLE IF NOT EXISTS provedores (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome VARCHAR(100) UNIQUE NOT NULL,
+                dns VARCHAR(255) NOT NULL,
+                tipo VARCHAR(20) DEFAULT 'xtream',
+                id_revendedor INTEGER NOT NULL,
+                ativo BOOLEAN DEFAULT 1,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                
+                FOREIGN KEY (id_revendedor) REFERENCES revendedores(id_revendedor) ON DELETE CASCADE
+            )",
+        'client_ids' => "
+            CREATE TABLE IF NOT EXISTS client_ids (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                client_id VARCHAR(36) UNIQUE NOT NULL,
+                provedor_id INTEGER NOT NULL,
+                id_revendedor INTEGER NOT NULL,
+                usuario VARCHAR(100),
+                primeira_conexao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                ultima_atividade TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                ativo BOOLEAN DEFAULT 1,
+                ip VARCHAR(45),
+                user_agent TEXT,
+                
+                FOREIGN KEY (provedor_id) REFERENCES provedores(id) ON DELETE CASCADE,
+                FOREIGN KEY (id_revendedor) REFERENCES revendedores(id_revendedor) ON DELETE CASCADE
+            )",
+        'auditoria' => "
+            CREATE TABLE IF NOT EXISTS auditoria (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id_revendedor INTEGER,
+                acao VARCHAR(100) NOT NULL,
+                detalhes TEXT,
+                ip VARCHAR(45),
+                user_agent TEXT,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                
+                FOREIGN KEY (id_revendedor) REFERENCES revendedores(id_revendedor) ON DELETE SET NULL
+            )"
+    ];
+
+    // Itera sobre o array e executa o SQL de criação para cada tabela
+    foreach ($tablesSQL as $tableName => $sql) {
+        try {
+            $db->exec($sql);
+            // Log opcional: descomente a linha abaixo se quiser ver quais tabelas estão sendo criadas
+            // error_log("NomaTV v4.2: Tabela '$tableName' verificada/criada com sucesso.");
+        } catch (PDOException $e) {
+            // Se houver erro na criação de alguma tabela, registra o erro e continua
+            error_log("NomaTV v4.2: Erro ao criar tabela '$tableName': " . $e->getMessage());
+            throw $e; // Re-lança a exceção para interromper a execução
+        }
+    }
+    
+    // Após criar as tabelas, insere os dados iniciais (se necessário)
+    insertInitialData($db);
+}
+
+/**
+ * Insere dados iniciais necessários para o funcionamento do sistema.
+ *
+ * @param PDO $db A instância da conexão com o banco de dados.
+ */
+function insertInitialData(PDO $db) {
+    try {
+        // --- Inserir Admin Padrão (id_revendedor: 1000) ---
+        // Verifica se já existe um admin no sistema
+        $stmt = $db->prepare("SELECT COUNT(*) FROM revendedores WHERE master = 'admin'");
+        $stmt->execute();
+        
+        if ($stmt->fetchColumn() == 0) {
+            // Se não existe admin, cria um admin padrão
+            $senhaHash = hash('sha256', 'admin123'); // Senha padrão: admin123
+            $insertStmt = $db->prepare("
+                INSERT INTO revendedores (id_revendedor, usuario, senha, nome, master, master_de, valor_ativo, valor_mensal, limite_ativos) 
+                VALUES (1000, 'admin', ?, 'Super Administrador', 'admin', NULL, NULL, NULL, 9999)
+            ");
+            $insertStmt->execute([$senhaHash]);
+            
+            error_log("NomaTV v4.2: Admin padrão criado - Usuario: admin | Senha: admin123 | ID: 1000");
+        }
+
+        // --- Inserir Revendedor de Exemplo (id_revendedor: 1234) ---
+        // Verifica se já existe o revendedor de exemplo
+        $stmt = $db->prepare("SELECT COUNT(*) FROM revendedores WHERE id_revendedor = 1234");
+        $stmt->execute();
+        
+        if ($stmt->fetchColumn() == 0) {
+            $senhaHashRev = hash('sha256', 'revendedor123');
+            $insertStmt = $db->prepare("
+                INSERT INTO revendedores (id_revendedor, usuario, senha, nome, email, master, master_de, plano, valor_ativo, valor_mensal, limite_ativos) 
+                VALUES (1234, 'joao', ?, 'João Silva', 'joao@nomatv.com', 'sim', NULL, 'Premium', 2.50, NULL, 200)
+            ");
+            $insertStmt->execute([$senhaHashRev]);
+        }
+
+        // --- Inserir Sub-Revendedor de Exemplo (id_revendedor: 5678) ---
+        // Verifica se já existe o sub-revendedor de exemplo
+        $stmt = $db->prepare("SELECT COUNT(*) FROM revendedores WHERE id_revendedor = 5678");
+        $stmt->execute();
+        
+        if ($stmt->fetchColumn() == 0) {
+            $senhaHashSub = hash('sha256', 'sub123');
+            $insertStmt = $db->prepare("
+                INSERT INTO revendedores (id_revendedor, usuario, senha, nome, email, master, master_de, plano, valor_ativo, valor_mensal, limite_ativos) 
+                VALUES (5678, 'pedro', ?, 'Pedro Santos', 'pedro@nomatv.com', 'nao', 1234, 'Básico', NULL, 50.00, 100)
+            ");
+            $insertStmt->execute([$senhaHashSub]);
+        }
+
+        // --- Inserir Provedores de Exemplo ---
+        $stmt = $db->prepare("SELECT COUNT(*) FROM provedores");
+        $stmt->execute();
+        
+        if ($stmt->fetchColumn() == 0) {
+            $provedoresExemplo = [
+                ['PlayBR', 'http://server1.com:8080', 'xtream', 1234],
+                ['NetTV', 'http://server2.com:8080', 'xtream', 5678],
+                ['StreamHD', 'http://server3.com:8080', 'xtream', 1234]
+            ];
+            
+            $insertStmt = $db->prepare("
+                INSERT INTO provedores (nome, dns, tipo, id_revendedor) 
+                VALUES (?, ?, ?, ?)
+            ");
+            
+            foreach ($provedoresExemplo as $provedor) {
+                $insertStmt->execute($provedor);
+            }
+        }
+
+        // --- Criar índices para performance ---
+        $indexes = [
+            "CREATE INDEX IF NOT EXISTS idx_revendedores_usuario ON revendedores(usuario)",
+            "CREATE INDEX IF NOT EXISTS idx_revendedores_master ON revendedores(master)",
+            "CREATE INDEX IF NOT EXISTS idx_revendedores_master_de ON revendedores(master_de)",
+            "CREATE INDEX IF NOT EXISTS idx_provedores_nome ON provedores(nome)",
+            "CREATE INDEX IF NOT EXISTS idx_provedores_revendedor ON provedores(id_revendedor)",
+            "CREATE INDEX IF NOT EXISTS idx_client_ids_client_id ON client_ids(client_id)",
+            "CREATE INDEX IF NOT EXISTS idx_client_ids_revendedor ON client_ids(id_revendedor)",
+            "CREATE INDEX IF NOT EXISTS idx_client_ids_ativo ON client_ids(ativo)",
+            "CREATE INDEX IF NOT EXISTS idx_auditoria_revendedor ON auditoria(id_revendedor)",
+            "CREATE INDEX IF NOT EXISTS idx_auditoria_timestamp ON auditoria(timestamp)"
+        ];
+        
+        foreach ($indexes as $indexSQL) {
+            try {
+                $db->exec($indexSQL);
+            } catch (PDOException $e) {
+                // Índices são opcionais - continue mesmo se houver erro
+                error_log("NomaTV v4.2: Aviso ao criar índice: " . $e->getMessage());
+            }
+        }
+
+        error_log("NomaTV v4.2: Sistema inicializado com dados de exemplo!");
+        
+    } catch (PDOException $e) {
+        error_log("NomaTV v4.2: Erro ao inserir dados iniciais: " . $e->getMessage());
+        // Não lance exceção aqui - deixe o sistema funcionar mesmo sem dados de exemplo
+    }
+}
+
+// O arquivo termina aqui. Ele não deve ter output (echo), apenas disponibilizar a variável $db.
+?>

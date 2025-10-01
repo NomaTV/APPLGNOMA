@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NomaApp - Painel Sub-Revendedor v4.5</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-light: #818cf8;
+            --primary-dark: #3730a3;
+            --secondary-color: #06b6d4;
+            --accent-color: #f59e0b;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --text-dark: #1f2937;
+            --text-medium: #374151;
+            --text-light: #6b7280;
+            --text-lighter: #9ca3af;
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --border-color: #e2e8f0;
+            --border-light: #f1f5f9;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #06b6d4 100%);
+            --gradient-secondary: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --backdrop-blur: blur(16px);
+        }
+        
+        /* ✅ AJUSTES FINAIS PROFISSIONAIS */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* ✅ SCROLLBAR PERSONALIZADA */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-tertiary); }
+        ::-webkit-scrollbar-thumb { 
+            background: var(--primary-color); 
+            border-radius: 4px; 
+        }
+        ::-webkit-scrollbar-thumb:hover { 
+            background: var(--primary-dark); 
+        }
+        
+        /* ✅ SELEÇÃO DE TEXTO */
+        ::selection {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        /* ✅ FOCUS STATES GLOBAIS */
+        button:focus, input:focus, select:focus, textarea:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+        
+        .container { display: flex; min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-xl);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            backdrop-filter: var(--backdrop-blur);
+        }
+        .sidebar.collapsed { transform: translateX(-280px); }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+        }
+        .sidebar-header {
+            padding: 30px 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: var(--backdrop-blur);
+        }
+        .logo { 
+            font-size: 32px; 
+            font-weight: 800; 
+            color: #fff; 
+            margin-bottom: 12px; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: -0.5px;
+        }
+        .user-info { 
+            font-size: 15px; 
+            color: rgba(255,255,255,0.9); 
+            margin-bottom: 8px; 
+            font-weight: 500;
+        }
+        .user-role { 
+            font-size: 12px; 
+            color: rgba(255,255,255,0.8); 
+            background: rgba(255, 255, 255, 0.15); 
+            padding: 6px 12px; 
+            border-radius: 20px; 
+            display: inline-block; 
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .nav-menu { padding: 25px 0; }
+        .nav-item { 
+            padding: 18px 30px; 
+            cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            border-left: 4px solid transparent; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            margin: 2px 0;
+            position: relative;
+            font-weight: 500;
+        }
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 0;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 0 25px 25px 0;
+        }
+        .nav-item:hover::before { width: 100%; }
+        .nav-item:hover { 
+            background: rgba(255,255,255,0.08); 
+            border-left-color: rgba(255,255,255,0.5);
+            transform: translateX(5px);
+        }
+        .nav-item.active { 
+            background: rgba(255,255,255,0.15); 
+            border-left-color: #fff;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        .nav-item.active::before { width: 100%; }
+        .nav-icon { 
+            font-size: 20px; 
+            width: 24px; 
+            text-align: center; 
+            opacity: 0.9;
+        }
+
+        /* Main Content */
+        .main-content { flex: 1; margin-left: 280px; display: flex; flex-direction: column; transition: margin-left 0.3s ease; }
+        .main-content.expanded { margin-left: 0; }
+        @media (max-width: 768px) { .main-content { margin-left: 0; } }
+
+        .header { 
+            background: var(--bg-secondary); 
+            padding: 20px 35px; 
+            box-shadow: var(--shadow-md); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 1px solid var(--border-light);
+            backdrop-filter: var(--backdrop-blur);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .menu-toggle { 
+            display: block; 
+            background: none; 
+            border: none; 
+            font-size: 26px; 
+            cursor: pointer; 
+            color: var(--text-medium);
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        .menu-toggle:hover {
+            background: var(--bg-tertiary);
+            color: var(--primary-color);
+        }
+        .page-title { 
+            font-size: 28px; 
+            color: var(--text-dark); 
+            margin: 0; 
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .logout-btn { 
+            background: var(--gradient-secondary); 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+        .logout-btn:hover { 
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Content Area */
+        .content { 
+            flex: 1; 
+            padding: 35px; 
+            overflow-y: auto; 
+            background: var(--bg-primary);
+            min-height: calc(100vh - 80px);
+        }
+        .section-content { display: none; }
+        .section-content.active { 
+            display: block; 
+            animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        @keyframes fadeInUp { 
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            } 
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            } 
+        }
+
+        /* Stats Grid */
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 25px; 
+            margin-bottom: 35px; 
+        }
+        .stat-card { 
+            background: var(--bg-secondary); 
+            padding: 30px; 
+            border-radius: 16px; 
+            box-shadow: var(--shadow-lg); 
+            border: 1px solid var(--border-light); 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+        .stat-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: var(--shadow-xl);
+        }
+        .stat-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+        }
+        .stat-title { 
+            font-size: 15px; 
+            color: var(--text-light); 
+            font-weight: 600; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-icon { 
+            font-size: 28px; 
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stat-value { 
+            font-size: 36px; 
+            font-weight: 800; 
+            color: var(--text-dark);
+            letter-spacing: -1px;
+        }
+
+        /* Table Styles */
+        .table-container { 
+            background: var(--bg-secondary); 
+            border-radius: 16px; 
+            box-shadow: var(--shadow-lg); 
+            overflow: hidden; 
+            border: 1px solid var(--border-light);
+        }
+        .table-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 25px 30px; 
+            border-bottom: 1px solid var(--border-color); 
+            background: var(--bg-tertiary);
+        }
+        .table-title { 
+            font-size: 20px; 
+            color: var(--text-dark); 
+            margin: 0; 
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+        .filters { 
+            display: flex; 
+            gap: 20px; 
+            align-items: center; 
+            padding: 25px 30px; 
+            border-bottom: 1px solid var(--border-color); 
+            background: var(--bg-secondary);
+        }
+        .search-input, .form-select { 
+            padding: 12px 16px; 
+            border: 2px solid var(--border-color); 
+            border-radius: 10px; 
+            font-size: 14px; 
+            transition: all 0.3s ease;
+            background: var(--bg-secondary);
+        }
+        .search-input:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
+        .search-input { width: 280px; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th, .table td { 
+            padding: 18px 30px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--border-light); 
+        }
+        .table th { 
+            background: var(--bg-tertiary); 
+            font-weight: 700; 
+            color: var(--text-medium); 
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .table tbody tr { 
+            transition: all 0.2s ease;
+        }
+        .table tbody tr:hover { 
+            background: var(--bg-tertiary); 
+            transform: scale(1.01);
+        }
+
+        /* Buttons */
+        .btn { 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: 600; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            text-decoration: none; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 10px; 
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .btn:hover::before {
+            left: 100%;
+        }
+        .btn-primary { 
+            background: var(--gradient-primary); 
+            color: white; 
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-primary:hover { 
+            transform: translateY(-2px); 
+            box-shadow: var(--shadow-lg);
+        }
+        .btn-danger { 
+            background: var(--gradient-secondary); 
+            color: white; 
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-danger:hover { 
+            transform: translateY(-2px); 
+            box-shadow: var(--shadow-lg);
+        }
+        .btn-secondary { 
+            background: var(--bg-tertiary); 
+            color: var(--text-medium); 
+            border: 2px solid var(--border-color);
+        }
+        .btn-secondary:hover { 
+            background: var(--bg-secondary);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+        .btn-small { padding: 8px 14px; font-size: 12px; }
+
+        /* Status Badges */
+        .status-badge { 
+            padding: 6px 14px; 
+            border-radius: 20px; 
+            font-size: 12px; 
+            font-weight: 600; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .status-ativo { 
+            background: rgba(16, 185, 129, 0.1); 
+            color: var(--success-color); 
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+        .status-inativo { 
+            background: rgba(239, 68, 68, 0.1); 
+            color: var(--danger-color); 
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        /* Modal Styles */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 2000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0,0,0,0.6); 
+            backdrop-filter: var(--backdrop-blur); 
+        }
+        .modal.show { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            animation: modalFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        @keyframes modalFadeIn { 
+            from { opacity: 0; } 
+            to { opacity: 1; } 
+        }
+        .modal-content { 
+            background-color: var(--bg-secondary); 
+            border-radius: 20px; 
+            width: 90%; 
+            max-width: 600px; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            box-shadow: var(--shadow-xl); 
+            transform: scale(0.9); 
+            animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; 
+            border: 1px solid var(--border-light);
+        }
+        @keyframes modalSlideIn { 
+            to { transform: scale(1); } 
+        }
+        .modal-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 25px 30px; 
+            border-bottom: 1px solid var(--border-color); 
+            background: var(--bg-tertiary);
+            border-radius: 20px 20px 0 0;
+        }
+        .modal-header h3 { 
+            margin: 0; 
+            color: var(--text-dark); 
+            font-weight: 700;
+            font-size: 20px;
+        }
+        .modal-close { 
+            background: none; 
+            border: none; 
+            font-size: 28px; 
+            cursor: pointer; 
+            color: var(--text-light); 
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .modal-close:hover {
+            background: var(--bg-tertiary);
+            color: var(--danger-color);
+        }
+        .modal-body { padding: 30px; }
+        .modal-footer { 
+            display: flex; 
+            justify-content: flex-end; 
+            gap: 15px; 
+            padding: 25px 30px; 
+            border-top: 1px solid var(--border-color); 
+            background: var(--bg-tertiary);
+            border-radius: 0 0 20px 20px;
+        }
+
+        /* Form Styles */
+        .form-group { margin-bottom: 25px; }
+        .form-label { 
+            display: block; 
+            margin-bottom: 10px; 
+            font-weight: 600; 
+            color: var(--text-medium); 
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-input, .form-select, .form-textarea { 
+            width: 100%; 
+            padding: 14px 16px; 
+            border: 2px solid var(--border-color); 
+            border-radius: 10px; 
+            font-size: 14px; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            background: var(--bg-secondary);
+            color: var(--text-medium);
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { 
+            outline: none; 
+            border-color: var(--primary-color); 
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            transform: translateY(-1px);
+        }
+        .form-row { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+        }
+
+        /* ✅ BRANDING STYLES PROFISSIONAIS */
+        .branding-container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+            gap: 35px; 
+            margin-top: 25px; 
+        }
+        .branding-info, .branding-upload { 
+            background: var(--bg-secondary); 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: var(--shadow-lg); 
+            border: 1px solid var(--border-light);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .branding-info::before, .branding-upload::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+        .branding-info:hover, .branding-upload:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+        .logo-preview-container { 
+            text-align: center; 
+            padding: 20px;
+            background: var(--bg-tertiary);
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        .logo-preview-img { 
+            max-width: 220px; 
+            max-height: 100px; 
+            border: 3px solid var(--border-color); 
+            border-radius: 12px; 
+            margin: 15px 0; 
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+        }
+        .logo-preview-img:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
+        }
+        .upload-area { 
+            border: 3px dashed var(--border-color); 
+            border-radius: 15px; 
+            padding: 50px 25px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            background: var(--bg-tertiary);
+            position: relative;
+            overflow: hidden;
+        }
+        .upload-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(79, 70, 229, 0.05), transparent);
+            transition: left 0.5s;
+        }
+        .upload-area:hover::before {
+            left: 100%;
+        }
+        .upload-area:hover, .upload-area.dragover { 
+            border-color: var(--primary-color); 
+            background: rgba(79, 70, 229, 0.05);
+            transform: translateY(-2px);
+        }
+        .upload-placeholder i { 
+            font-size: 56px; 
+            margin-bottom: 20px; 
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .upload-placeholder p {
+            font-weight: 600;
+            color: var(--text-medium);
+            margin: 15px 0;
+        }
+        .upload-placeholder small {
+            color: var(--text-light);
+            font-size: 13px;
+        }
+        .preview-image { 
+            max-width: 100%; 
+            max-height: 250px; 
+            border-radius: 12px; 
+            margin-top: 20px; 
+            box-shadow: var(--shadow-md);
+        }
+        .preview-actions { 
+            margin-top: 25px; 
+            display: flex; 
+            gap: 15px; 
+            justify-content: center; 
+        }
+        
+        /* ✅ ESTILOS PARA CAMPO ID E STATUS */
+        .logo-id-field { 
+            background: var(--bg-tertiary); 
+            color: var(--text-medium); 
+            cursor: not-allowed; 
+            font-family: 'JetBrains Mono', 'Courier New', monospace; 
+            font-weight: 700; 
+            text-align: center; 
+            font-size: 16px;
+            border: 2px solid var(--border-color);
+        }
+        .logo-status { 
+            padding: 12px 18px; 
+            border-radius: 10px; 
+            font-size: 14px; 
+            font-weight: 600; 
+            text-align: center; 
+            margin-bottom: 20px; 
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .logo-status.loading { 
+            background: rgba(245, 158, 11, 0.1); 
+            color: var(--warning-color); 
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+        .logo-status.success { 
+            background: rgba(16, 185, 129, 0.1); 
+            color: var(--success-color); 
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+        .logo-status.error { 
+            background: rgba(239, 68, 68, 0.1); 
+            color: var(--danger-color); 
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+        .logo-status.info { 
+            background: rgba(6, 182, 212, 0.1); 
+            color: var(--secondary-color); 
+            border-color: rgba(6, 182, 212, 0.2);
+        }
+        
+        /* ✅ SPINNER PERSONALIZADO */
+        .branding-spinner { 
+            display: inline-block; 
+            width: 24px; 
+            height: 24px; 
+            border: 3px solid rgba(79, 70, 229, 0.1); 
+            border-top: 3px solid var(--primary-color); 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+            margin-right: 10px; 
+        }
+        
+        /* ✅ TELA TRAVADA PROFISSIONAL */
+        .branding-lock { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: var(--backdrop-blur); 
+            z-index: 9998; 
+            display: none; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .branding-lock.active { display: flex; }
+        .branding-lock > div {
+            background: var(--bg-secondary);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border-light);
+            text-align: center;
+        }
+
+        /* Loading & Alert Styles */
+        .loading-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: var(--backdrop-blur); 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 9999; 
+        }
+        .loading-overlay.show { display: flex; }
+        .loading { 
+            display: inline-block; 
+            width: 50px; 
+            height: 50px; 
+            border: 4px solid rgba(79, 70, 229, 0.1); 
+            border-top: 4px solid var(--primary-color); 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .alert { 
+            padding: 18px 20px; 
+            border-radius: 12px; 
+            margin-bottom: 25px; 
+            position: relative; 
+            border-left: 4px solid; 
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .alert-success { 
+            background: rgba(16, 185, 129, 0.1); 
+            color: var(--success-color); 
+            border-left-color: var(--success-color); 
+        }
+        .alert-error { 
+            background: rgba(239, 68, 68, 0.1); 
+            color: var(--danger-color); 
+            border-left-color: var(--danger-color); 
+        }
+        .alert .close-btn { 
+            position: absolute; 
+            top: 15px; 
+            right: 18px; 
+            background: none; 
+            border: none; 
+            font-size: 20px; 
+            cursor: pointer; 
+            color: inherit; 
+            opacity: 0.7; 
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .alert .close-btn:hover {
+            opacity: 1;
+            background: rgba(0,0,0,0.1);
+        }
+
+        /* Empty States */
+        .empty-state { 
+            text-align: center; 
+            padding: 80px 40px; 
+            color: var(--text-light); 
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            margin: 20px 0;
+        }
+        .empty-state i { 
+            font-size: 72px; 
+            margin-bottom: 25px; 
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .empty-state h3 { 
+            margin-bottom: 12px; 
+            color: var(--text-dark); 
+            font-weight: 700;
+            font-size: 20px;
+        }
+        .empty-state p {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { display: block; }
+            .sidebar { transform: translateX(-100%); z-index: 1001; width: 250px; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .menu-toggle { display: block; font-size: 28px; }
+            .branding-container, .form-row, .stats-grid { grid-template-columns: 1fr; }
+            .filters { flex-direction: column; align-items: stretch; }
+            .search-input { width: 100%; }
+            .table-container { overflow-x: auto; }
+            .table { width: 700px; }
+            .content { padding: 20px; }
+            .header { padding: 15px 20px; }
+            .page-title { font-size: 24px; }
+            .stat-card { padding: 20px; }
+            .stat-value { font-size: 28px; }
+            .modal-content { width: 95%; margin: 20px; }
+            .modal-header, .modal-body, .modal-footer { padding: 20px; }
+            .branding-info, .branding-upload { padding: 20px; }
+            .upload-area { padding: 30px 15px; }
+        }
+        .mobile-overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            background: rgba(0,0,0,0.6); 
+            z-index: 999; 
+            transition: opacity 0.3s ease; 
+            opacity: 0;
+            backdrop-filter: var(--backdrop-blur);
+        }
+        .mobile-overlay.active { display: block; opacity: 1; }
+    </style>
+</head>
+<body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading"></div>
+    </div>
+    
+    <!-- ✅ TELA TRAVADA PARA BRANDING -->
+    <div id="brandingLock" class="branding-lock">
+        <div style="text-align: center;">
+            <div class="branding-spinner"></div>
+            <div style="margin-top: 10px; font-weight: 500; color: #495057;">Processando...</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">📺 NomaApp</div>
+                <div class="user-info" id="userName">Carregando...</div>
+                <div class="user-role">Sub-Revendedor</div>
+            </div>
+            
+            <nav class="nav-menu">
+                <div class="nav-item active" onclick="showSection('dashboard', this)"><i class="nav-icon fas fa-chart-pie"></i> Dashboard</div>
+                <div class="nav-item" onclick="showSection('ativos', this)"><i class="nav-icon fas fa-tv"></i> Meus Ativos</div>
+                <div class="nav-item" onclick="showSection('provedores', this)"><i class="nav-icon fas fa-server"></i> Meus Provedores</div>
+                <div class="nav-item" onclick="showSection('branding', this)"><i class="nav-icon fas fa-palette"></i> Meu Branding</div>
+                <div class="nav-item" onclick="showSection('financeiro', this)"><i class="nav-icon fas fa-wallet"></i> Meu Financeiro</div>
+                <div class="nav-item" onclick="showSection('seguranca', this)"><i class="nav-icon fas fa-shield-alt"></i> Segurança</div>
+            </nav>
+        </div>
+
+        <div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileMenu()"></div>
+
+        <div class="main-content" id="mainContent">
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+                    <h1 class="page-title" id="pageTitle">Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <span id="currentUser">Carregando...</span>
+                    <button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+                </div>
+            </header>
+
+            <main class="content">
+                <div id="dashboard-content" class="section-content active">
+                    <div class="stats-grid" id="dashboardStats"></div>
+                </div>
+
+                <div id="ativos-content" class="section-content">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Meus Ativos</h2>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Client ID</th>
+                                    <th>Provedor</th>
+                                    <th>Status</th>
+                                    <th>Última Atividade</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ativosTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="provedores-content" class="section-content">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Meus Provedores</h2>
+                            <button class="btn btn-primary" onclick="openProvedorModal()"><i class="fas fa-plus"></i> Novo Provedor</button>
+                        </div>
+                        <table class="table">
+                            <thead><tr><th>Nome</th><th>DNS</th><th>Tipo</th><th>Status</th><th>Ativos</th><th>Ações</th></tr></thead>
+                            <tbody id="provedoresTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ✅ SESSÃO BRANDING ATIVA POR PADRÃO -->
+                <div id="branding-content" class="section-content">
+                    <div style="margin-bottom: 20px;">
+                        <h2><i class="fas fa-palette"></i> Meu Branding</h2>
+                        <p style="color: #7f8c8d; margin-top: 8px;">Personalize a logo que aparece no aplicativo dos seus clientes.</p>
+                    </div>
+                    
+                    <div class="branding-container">
+                        <!-- ✅ INFO E PREVIEW -->
+                        <div class="branding-info">
+                            <h3 style="margin-bottom: 20px;"><i class="fas fa-id-card"></i> Identificação</h3>
+                            
+                            <!-- ✅ CAMPO ID READONLY -->
+                            <div class="form-group">
+                                <label class="form-label">ID da Logo:</label>
+                                <input type="text" id="logoFileName" class="form-input logo-id-field" readonly value="carregando...">
+                            </div>
+                            
+                            <!-- ✅ STATUS DINÂMICO -->
+                            <div id="logoStatus" class="logo-status info">
+                                <i class="fas fa-info-circle"></i> Verificando status...
+                            </div>
+                            
+                            <!-- ✅ PREVIEW DA LOGO ATUAL -->
+                            <div id="logoPreviewContainer" class="logo-preview-container" style="display: none;">
+                                <img id="logoAtual" src="" alt="Logo Atual" class="logo-preview-img">
+                                <div class="preview-actions">
+                                    <button class="btn btn-danger btn-small" onclick="excluirLogo()">
+                                        <i class="fas fa-trash"></i> Remover Logo
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- ✅ ÁREA DE UPLOAD -->
+                        <div class="branding-upload">
+                            <h3 style="margin-bottom: 20px;"><i class="fas fa-upload"></i> Upload de Logo</h3>
+                            
+                            <div class="upload-area" onclick="document.getElementById('file-input').click()" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p style="margin: 10px 0; font-weight: 500;">Clique ou arraste uma imagem PNG</p>
+                                    <small>300x300 a 500x500px • Máx: 150KB • Apenas PNG</small>
+                                </div>
+                                <img id="preview-img" style="display: none;" class="preview-image">
+                            </div>
+                            
+                            <input type="file" id="file-input" accept=".png" style="display: none;" onchange="previewImage(this)">
+                            
+                            <!-- ✅ BOTÕES DE AÇÃO -->
+                            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                                <button id="btn-salvar" class="btn btn-primary" disabled onclick="handleSalvarLogo()" style="flex: 1;">
+                                    <i class="fas fa-save"></i> Salvar Configuração
+                                </button>
+                                <button id="btn-trocar" class="btn btn-secondary" disabled onclick="handleTrocarLogo()" style="flex: 1; display: none;">
+                                    <i class="fas fa-sync-alt"></i> Trocar Logo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="financeiro-content" class="section-content">
+                     <div class="empty-state">
+                        <i class="fas fa-wallet"></i>
+                        <h3>Meu Financeiro</h3>
+                        <p>Esta funcionalidade estará disponível em breve.</p>
+                    </div>
+                </div>
+
+                <div id="seguranca-content" class="section-content">
+                    <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <form id="senhaForm">
+                            <div class="form-group">
+                                <h3 style="margin-bottom: 20px;"><i class="fas fa-key"></i> Alterar Senha</h3>
+                                <label class="form-label">Senha Atual</label>
+                                <input type="password" id="senhaAtual" class="form-input" required>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Nova Senha</label>
+                                    <input type="password" id="novaSenha" class="form-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Confirmar Nova Senha</label>
+                                    <input type="password" id="confirmarSenha" class="form-input" required>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Alterar Senha</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Modal Provedor -->
+    <div id="provedorModal" class="modal"><div class="modal-content">
+        <div class="modal-header"><h3 id="provedorModalTitle">Novo Provedor</h3><button class="modal-close" onclick="closeModal('provedorModal')">&times;</button></div>
+        <div class="modal-body"><form id="provedorForm">
+            <input type="hidden" id="provedorId">
+            <div class="form-group"><label class="form-label">Nome *</label><input type="text" id="provedorNome" class="form-input" required></div>
+            <div class="form-group"><label class="form-label">DNS/URL *</label><input type="url" id="provedorDns" class="form-input" required></div>
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">Tipo</label><select id="provedorTipo" class="form-select"><option value="xtream">Xtream</option><option value="m3u">M3U</option></select></div>
+                <div class="form-group"><label class="form-label">Status</label><select id="provedorStatus" class="form-select"><option value="1">Ativo</option><option value="0">Inativo</option></select></div>
+            </div>
+        </form></div>
+        <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('provedorModal')">Cancelar</button><button class="btn btn-primary" onclick="salvarProvedor()">Salvar</button></div>
+    </div></div>
+
+    <!-- Modal de Confirmação -->
+    <div id="confirmModal" class="modal"><div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header"><h3 id="confirmTitle">Confirmar</h3><button class="modal-close" onclick="closeModal('confirmModal')">&times;</button></div>
+        <div class="modal-body"><p id="confirmMessage">Tem certeza?</p></div>
+        <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('confirmModal')">Cancelar</button><button class="btn btn-primary" id="confirmButton">Confirmar</button></div>
+    </div></div>
+
+    <!-- Scripts -->
+    <script src="api.js"></script>
+    <script>
+        // =================================================================
+        // 📦 NomaApp - Painel Sub-Revendedor v4.5 (DADOS APENAS PRÓPRIOS)
+        // =================================================================
+        
+        checkAuthentication();
+        
+        let appState = {
+            user: null,
+            provedores: [],
+            ativos: [],
+            branding: {}
+        };
+        let currentEditingId = null;
+        let confirmCallback = null;
+
+        function debugSessionStorage() {
+            console.log('🔍 === DEBUG SESSION STORAGE ===');
+            console.log('revendedorId:', sessionStorage.getItem('revendedorId'));
+            console.log('masterType:', sessionStorage.getItem('masterType'));
+            console.log('userName:', sessionStorage.getItem('userName'));
+            console.log('appState.user:', appState.user);
+            console.log('🔍 === FIM DEBUG ===');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            debugSessionStorage();
+
+            // ✅ CORRIGIDO (usa sessionStorage):
+            appState.user = { 
+                nome: sessionStorage.getItem('userName') || 'Usuário',
+                master: sessionStorage.getItem('masterType'),
+                id_revendedor: sessionStorage.getItem('revendedorId')
+            };
+            
+            document.getElementById('userName').textContent = 'Sub-Revendedor';
+            document.getElementById('currentUser').textContent = 'Sub-Revendedor';
+            
+            const firstNavItem = document.querySelector('.nav-item.active');
+            if (firstNavItem) {
+                showSection('dashboard', firstNavItem);
+            }
+        });
+
+        async function handleLogout() {
+            showConfirm('Sair do Sistema', 'Tem certeza que deseja sair?', () => {
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+            });
+        }
+
+        // --- NAVEGAÇÃO ---
+        function showSection(section, element) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+            document.querySelectorAll('.section-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(section + '-content').classList.add('active');
+            document.getElementById('pageTitle').textContent = element.textContent.trim();
+            
+            switch(section) {
+                case 'dashboard': loadDashboard(); break;
+                case 'ativos': loadAtivos(); break;
+                case 'provedores': loadProvedores(); break;
+                case 'branding': loadBranding(); break;
+            }
+            
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) closeMobileMenu();
+        }
+        
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const isMobile = window.innerWidth <= 768;
+
+            if (isMobile) {
+                const overlay = document.getElementById('mobileOverlay');
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            } else {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+            }
+        }
+        
+        function closeMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
+        // --- DASHBOARD (APENAS DADOS PRÓPRIOS) ---
+        async function loadDashboard() {
+            try {
+                showLoading();
+                const response = await getDashboardStats();
+                const stats = response.data || {};
+                
+                // ✅ SUB-REVENDEDOR: Apenas stats próprios
+                const meusAtivos = stats.meusAtivos || 0;
+                const meusProvedores = stats.meusProvedores || 0;
+                
+                document.getElementById('dashboardStats').innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Meus Provedores</span>
+                            <i class="stat-icon fas fa-server"></i>
+                        </div>
+                        <div class="stat-value">${meusProvedores}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Meus Ativos</span>
+                            <i class="stat-icon fas fa-tv"></i>
+                        </div>
+                        <div class="stat-value">${meusAtivos}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Status da Conta</span>
+                            <i class="stat-icon fas fa-user-check"></i>
+                        </div>
+                        <div class="stat-value" style="font-size: 24px; color: var(--success-color);">Ativo</div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Erro ao carregar dashboard:', error);
+                showAlert('Erro ao carregar estatísticas do dashboard.', 'error');
+                document.getElementById('dashboardStats').innerHTML = '<p class="empty-state">Não foi possível carregar as estatísticas.</p>';
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // --- ATIVOS (APENAS PRÓPRIOS) ---
+        async function loadAtivos() {
+            try {
+                showLoading('Carregando meus ativos...');
+                const response = await getClientIds();
+                appState.ativos = response.data || [];
+                renderAtivos();
+            } catch (error) {
+                console.error('Erro ao carregar ativos:', error);
+                showAlert('Erro ao carregar seus ativos.', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function renderAtivos() {
+            const tbody = document.getElementById('ativosTableBody');
+            if (appState.ativos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fas fa-tv"></i><h3>Nenhum ativo encontrado</h3><p>Você ainda não possui clientes ativos.</p></td></tr>';
+                return;
+            }
+            tbody.innerHTML = appState.ativos.map(a => `
+                <tr>
+                    <td><code>${a.client_id}</code></td>
+                    <td>${a.provedor_nome}</td>
+                    <td><span class="status-badge status-${a.ativo ? 'ativo' : 'inativo'}">${a.ativo ? 'Ativo' : 'Inativo'}</span></td>
+                    <td>${a.ultima_atividade ? new Date(a.ultima_atividade).toLocaleString('pt-BR') : 'N/A'}</td>
+                    <td>
+                        <button class="btn btn-secondary btn-small" onclick="toggleAtivoStatus('${a.client_id}', ${a.ativo})">
+                            <i class="fas fa-power-off"></i>
+                        </button>
+                        <button class="btn btn-danger btn-small" onclick="excluirAtivo('${a.client_id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // --- PROVEDORES (APENAS PRÓPRIOS) ---
+        async function loadProvedores() {
+            try {
+                showLoading();
+                const response = await listarProvedores();
+                appState.provedores = response.data || [];
+                renderProvedores();
+            } catch (error) {
+                console.error('Erro ao carregar provedores:', error);
+                showAlert('Erro ao carregar seus provedores.', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function renderProvedores() {
+            const tbody = document.getElementById('provedoresTableBody');
+            if (appState.provedores.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fas fa-server"></i><h3>Nenhum provedor encontrado</h3><p>Clique em "Novo Provedor" para começar.</p></td></tr>';
+                return;
+            }
+            tbody.innerHTML = appState.provedores.map(p => `
+                <tr>
+                    <td>${p.nome}</td>
+                    <td>${p.dns}</td>
+                    <td>${p.tipo || 'xtream'}</td>
+                    <td><span class="status-badge status-${p.ativo ? 'ativo' : 'inativo'}">${p.ativo ? 'Ativo' : 'Inativo'}</span></td>
+                    <td>${p.clientes_ativos || 0}</td>
+                    <td>
+                        <button class="btn btn-secondary btn-small" onclick="openProvedorModal(${p.id_provedor})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger btn-small" onclick="excluirProvedor(${p.id_provedor})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openProvedorModal(id = null) {
+            currentEditingId = id;
+            const form = document.getElementById('provedorForm');
+            form.reset();
+            if (id) {
+                const provedor = appState.provedores.find(p => p.id_provedor === id);
+                document.getElementById('provedorModalTitle').textContent = 'Editar Provedor';
+                document.getElementById('provedorId').value = provedor.id_provedor;
+                document.getElementById('provedorNome').value = provedor.nome;
+                document.getElementById('provedorDns').value = provedor.dns;
+                document.getElementById('provedorTipo').value = provedor.tipo;
+                document.getElementById('provedorStatus').value = provedor.ativo ? 1 : 0;
+            } else {
+                document.getElementById('provedorModalTitle').textContent = 'Novo Provedor';
+            }
+            document.getElementById('provedorModal').classList.add('show');
+        }
+
+        async function salvarProvedor() {
+            const data = {
+                nome: document.getElementById('provedorNome').value,
+                dns: document.getElementById('provedorDns').value,
+                tipo: document.getElementById('provedorTipo').value,
+                ativo: parseInt(document.getElementById('provedorStatus').value)
+            };
+            try {
+                showLoading();
+                if (currentEditingId) {
+                    await atualizarProvedor(currentEditingId, data);
+                    showAlert('Provedor atualizado com sucesso!', 'success');
+                } else {
+                    await criarProvedor(data);
+                    showAlert('Provedor criado com sucesso!', 'success');
+                }
+                closeModal('provedorModal');
+                loadProvedores();
+            } catch (error) {
+                showAlert('Erro ao salvar provedor: ' + (error.error || error.message), 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function excluirProvedor(id) {
+            showConfirm('Excluir Provedor', 'Tem certeza que deseja excluir este provedor? Esta ação não pode ser desfeita.', async () => {
+                try {
+                    showLoading();
+                    await deletarProvedor(id);
+                    showAlert('Provedor excluído com sucesso!', 'success');
+                    loadProvedores();
+                } catch (error) {
+                    showAlert('Erro ao excluir provedor: ' + (error.error || error.message), 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+        }
+        
+        // ✅ =================================================================
+        // 🎨 BRANDING - SESSÃO ATIVA POR PADRÃO
+        // ✅ =================================================================
+        
+        let brandingState = {
+            hasLogo: false,
+            currentFile: null,
+            revendedorId: null
+        };
+
+        async function loadBranding() {
+            try {
+                brandingState.revendedorId = sessionStorage.getItem('revendedorId');
+                
+                if (!brandingState.revendedorId) {
+                    updateBrandingStatus('error', 'Erro: ID do revendedor não encontrado na sessão.');
+                    return;
+                }
+
+                const logoFileName = brandingState.revendedorId + '.png';
+                document.getElementById('logoFileName').value = logoFileName;
+
+                updateBrandingStatus('loading', 'Verificando logo existente...');
+
+                const response = await getBrandingLogo();
+                
+                if (response.success && response.data.has_logo) {
+                    brandingState.hasLogo = true;
+                    mostrarLogoExistente(response.data.proxy_url);
+                    updateBrandingStatus('success', 'Logo carregada com sucesso!');
+                } else {
+                    brandingState.hasLogo = false;
+                    mostrarAreaUpload();
+                    updateBrandingStatus('info', 'Nenhuma logo encontrada. Você pode fazer upload de uma nova logo.');
+                }
+
+            } catch (error) {
+                console.error('Erro ao carregar branding:', error);
+                updateBrandingStatus('error', 'Erro ao verificar status da logo.');
+                mostrarAreaUpload();
+            }
+        }
+
+        function mostrarLogoExistente(proxyUrl) {
+            document.getElementById('logoPreviewContainer').style.display = 'block';
+            document.getElementById('logoAtual').src = proxyUrl + `?t=${new Date().getTime()}`;
+            document.getElementById('btn-trocar').style.display = 'inline-flex';
+            document.getElementById('btn-salvar').style.display = 'none';
+        }
+
+        function mostrarAreaUpload() {
+            document.getElementById('logoPreviewContainer').style.display = 'none';
+            document.getElementById('btn-salvar').style.display = 'inline-flex';
+            document.getElementById('btn-trocar').style.display = 'none';
+        }
+
+        function updateBrandingStatus(type, message) {
+            const statusElement = document.getElementById('logoStatus');
+            statusElement.className = `logo-status ${type}`;
+            
+            const icons = {
+                loading: 'fas fa-spinner fa-spin',
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+            
+            statusElement.innerHTML = `<i class="${icons[type]}"></i> ${message}`;
+        }
+
+        function previewImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            if (file.type !== 'image/png') {
+                updateBrandingStatus('error', 'Apenas arquivos PNG são aceitos!');
+                resetFileInput();
+                return;
+            }
+
+            const maxSize = 150 * 1024;
+            if (file.size > maxSize) {
+                updateBrandingStatus('error', `Arquivo muito grande! Máximo: 150KB. Atual: ${Math.round(file.size / 1024)}KB`);
+                resetFileInput();
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = new Image();
+                img.onload = () => {
+                    const validacao = validarDimensoesImagem(img.width, img.height);
+                    if (validacao !== null) {
+                        updateBrandingStatus('error', validacao);
+                        resetFileInput();
+                        return;
+                    }
+
+                    const novoNome = brandingState.revendedorId + '.png';
+                    const renamedFile = new File([file], novoNome, { type: file.type });
+                    brandingState.currentFile = renamedFile;
+
+                    document.getElementById('preview-img').src = e.target.result;
+                    document.getElementById('preview-img').style.display = 'block';
+                    document.querySelector('.upload-placeholder').style.display = 'none';
+
+                    document.getElementById('btn-salvar').disabled = false;
+                    document.getElementById('btn-trocar').disabled = false;
+
+                    updateBrandingStatus('success', `Logo válida! Será salva como: ${novoNome}`);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function validarDimensoesImagem(largura, altura) {
+            if (largura < 300 || altura < 300) {
+                return `Dimensões muito pequenas! Mínimo: 300x300px. Atual: ${largura}x${altura}px`;
+            }
+            if (largura > 500 || altura > 500) {
+                return `Dimensões muito grandes! Máximo: 500x500px. Atual: ${largura}x${altura}px`;
+            }
+            return null;
+        }
+
+        function resetFileInput() {
+            document.getElementById('file-input').value = '';
+            document.getElementById('preview-img').style.display = 'none';
+            document.querySelector('.upload-placeholder').style.display = 'block';
+            document.getElementById('btn-salvar').disabled = true;
+            document.getElementById('btn-trocar').disabled = true;
+            brandingState.currentFile = null;
+        }
+
+        async function handleSalvarLogo() {
+            if (!brandingState.currentFile) {
+                updateBrandingStatus('error', 'Selecione uma imagem primeiro!');
+                return;
+            }
+
+            try {
+                travarTelaBranding();
+                updateBrandingStatus('loading', 'Salvando configuração...');
+
+                await uploadBrandingLogo(brandingState.currentFile);
+
+                updateBrandingStatus('success', 'Logo salva com sucesso!');
+                showAlert('Logo salva com sucesso!', 'success');
+                
+                resetFileInput();
+                loadBranding();
+
+            } catch (error) {
+                console.error('Erro ao salvar logo:', error);
+                updateBrandingStatus('error', 'Erro ao salvar logo: ' + (error.error || error.message));
+                showAlert('Erro ao salvar logo: ' + (error.error || error.message), 'error');
+            } finally {
+                destravarTelaBranding();
+            }
+        }
+
+        async function handleTrocarLogo() {
+            if (!brandingState.currentFile) {
+                updateBrandingStatus('error', 'Selecione uma nova imagem primeiro!');
+                return;
+            }
+
+            try {
+                travarTelaBranding();
+                updateBrandingStatus('loading', 'Removendo logo atual e salvando nova...');
+
+                await uploadBrandingLogo(brandingState.currentFile);
+
+                updateBrandingStatus('success', 'Logo trocada com sucesso!');
+                showAlert('Logo trocada com sucesso!', 'success');
+                
+                resetFileInput();
+                loadBranding();
+
+            } catch (error) {
+                console.error('Erro ao trocar logo:', error);
+                updateBrandingStatus('error', 'Erro ao trocar logo: ' + (error.error || error.message));
+                showAlert('Erro ao trocar logo: ' + (error.error || error.message), 'error');
+            } finally {
+                destravarTelaBranding();
+            }
+        }
+
+        function excluirLogo() {
+            showConfirm('Excluir Logo', 'Tem certeza que deseja remover sua logo personalizada?', async () => {
+                try {
+                    travarTelaBranding();
+                    updateBrandingStatus('loading', 'Removendo logo...');
+
+                    await deleteBrandingLogo();
+
+                    updateBrandingStatus('success', 'Logo removida com sucesso!');
+                    showAlert('Logo removida com sucesso!', 'success');
+                    
+                    loadBranding();
+
+                } catch (error) {
+                    console.error('Erro ao remover logo:', error);
+                    updateBrandingStatus('error', 'Erro ao remover logo: ' + (error.error || error.message));
+                    showAlert('Erro ao remover logo: ' + (error.error || error.message), 'error');
+                } finally {
+                    destravarTelaBranding();
+                }
+            });
+        }
+
+        function travarTelaBranding() {
+            document.getElementById('brandingLock').classList.add('active');
+        }
+
+        function destravarTelaBranding() {
+            document.getElementById('brandingLock').classList.remove('active');
+        }
+
+        function handleDragOver(e) { 
+            e.preventDefault(); 
+            e.currentTarget.classList.add('dragover'); 
+        }
+        
+        function handleDragLeave(e) { 
+            e.currentTarget.classList.remove('dragover'); 
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('file-input').files = files;
+                previewImage(document.getElementById('file-input'));
+            }
+        }
+
+        // --- UTILITÁRIOS ---
+        function showLoading(message = 'Carregando...') { 
+            document.getElementById('loadingOverlay').classList.add('show'); 
+        }
+        function hideLoading() { 
+            document.getElementById('loadingOverlay').classList.remove('show'); 
+        }
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.querySelector('.content');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `${message}<button class="close-btn" onclick="this.parentElement.remove()">&times;</button>`;
+            alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+            setTimeout(() => { if(alertDiv.parentElement) alertDiv.remove(); }, 5000);
+        }
+        function showConfirm(title, message, callback) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').textContent = message;
+            const confirmBtn = document.getElementById('confirmButton');
+            confirmBtn.onclick = () => {
+                closeModal('confirmModal');
+                callback();
+            };
+            document.getElementById('confirmModal').classList.add('show');
+        }
+        function closeModal(modalId) { 
+            document.getElementById(modalId).classList.remove('show'); 
+        }
+        
+        // Placeholders para ações dos ativos
+        function toggleAtivoStatus(clientId, isCurrentlyActive) {
+            showConfirm('Alterar Status', `Tem certeza que deseja ${isCurrentlyActive ? 'inativar' : 'ativar'} este ativo?`, async () => {
+                showAlert('Status do ativo alterado.', 'success');
+                loadAtivos();
+            });
+        }
+        
+        function excluirAtivo(clientId) {
+            showConfirm('Excluir Ativo', 'Tem certeza que deseja excluir este ativo?', async () => {
+                showAlert('Ativo excluído.', 'success');
+                loadAtivos();
+            });
+        }
+    </script>
+</body>
+</html>

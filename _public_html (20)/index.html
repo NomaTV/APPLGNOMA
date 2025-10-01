@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NomaTV - Painel Administrativo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            font-weight: 300;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #fff;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-input:invalid {
+            border-color: #e74c3c;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-btn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #e74c3c;
+            display: none;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 20%, 40%, 60%, 80% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        }
+
+        .success-message {
+            background: #efe;
+            color: #363;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #27ae60;
+            display: none;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .remember-me input[type="checkbox"] {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+        }
+
+        .remember-me label {
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 30px;
+            color: #888;
+            font-size: 12px;
+        }
+
+        .system-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #27ae60;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsividade */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 25px;
+                margin: 10px;
+            }
+            
+            .logo {
+                font-size: 28px;
+            }
+            
+            .system-status {
+                display: none;
+            }
+        }
+
+        /* Input validation states */
+        .form-input.valid {
+            border-color: #27ae60;
+        }
+
+        .form-input.error {
+            border-color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <!-- Status do Sistema -->
+    <div class="system-status">
+        🟢 Sistema Online
+    </div>
+
+    <div class="login-container">
+        <!-- Logo e Título -->
+        <div class="logo-container">
+            <div class="logo">NomaTV</div>
+            <div class="subtitle">Painel Administrativo</div>
+        </div>
+
+        <!-- Mensagens de Erro/Sucesso -->
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <!-- Formulário de Login -->
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username" class="form-label">Usuário</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    class="form-input" 
+                    placeholder="Digite seu usuário ou email"
+                    required
+                    autocomplete="username"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">Senha</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    class="form-input" 
+                    placeholder="Digite sua senha"
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <div class="remember-me">
+                <input type="checkbox" id="rememberMe">
+                <label for="rememberMe">Lembrar credenciais</label>
+            </div>
+
+            <button type="submit" id="loginBtn" class="login-btn">
+                <span class="spinner"></span>
+                <span class="btn-text">Entrar no Sistema</span>
+            </button>
+        </form>
+
+        <!-- Rodapé -->
+        <div class="footer-text">
+            NomaTV © 2025 - Sistema de Gerenciamento IPTV
+        </div>
+    </div>
+
+    <script>
+        // Configurações da API
+        const API_BASE = '/api/backend.php';
+        
+        // Elementos DOM
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const rememberCheckbox = document.getElementById('rememberMe');
+        const loginBtn = document.getElementById('loginBtn');
+        const spinner = loginBtn.querySelector('.spinner');
+        const btnText = loginBtn.querySelector('.btn-text');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+
+        // Carregar credenciais salvas (apenas se lembrar estiver marcado)
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 NomaTV Login carregado');
+            
+            const savedUsername = localStorage.getItem('nomatv_username');
+            const savedPassword = localStorage.getItem('nomatv_password');
+            const shouldRemember = localStorage.getItem('nomatv_remember') === 'true';
+            
+            if (savedUsername && savedPassword && shouldRemember) {
+                usernameInput.value = savedUsername;
+                passwordInput.value = savedPassword;
+                rememberCheckbox.checked = true;
+            }
+            
+            // Auto-focus no primeiro campo vazio
+            if (!usernameInput.value) {
+                usernameInput.focus();
+            } else if (!passwordInput.value) {
+                passwordInput.focus();
+            }
+        });
+
+        // Validação em tempo real
+        [usernameInput, passwordInput].forEach(input => {
+            input.addEventListener('input', () => {
+                validateInput(input);
+                clearMessages();
+            });
+        });
+
+        function validateInput(input) {
+            if (input.value.trim() === '') {
+                input.classList.remove('valid', 'error');
+            } else if (input.checkValidity()) {
+                input.classList.add('valid');
+                input.classList.remove('error');
+            } else {
+                input.classList.add('error');
+                input.classList.remove('valid');
+            }
+        }
+
+        // Submit do formulário
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await handleLogin();
+        });
+
+        // Enter key handler
+        [usernameInput, passwordInput].forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+        });
+
+        async function handleLogin() {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            console.log('🔐 Tentando login:', username);
+
+            // Validação básica
+            if (!username || !password) {
+                showError('Por favor, preencha todos os campos.');
+                return;
+            }
+
+            // UI feedback
+            setLoading(true);
+            clearMessages();
+
+            try {
+                console.log('📡 Fazendo requisição para API...');
+
+                const response = await fetch(`${API_BASE}?endpoint=login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: username,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+                console.log('📊 Resposta da API:', data);
+                
+                if (data.success) {
+                    console.log('✅ Login bem-sucedido:', data.userType);
+                    
+                    showSuccess('Login realizado com sucesso! Redirecionando...');
+                    
+                    // Salvar token e dados do usuário
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userType', data.userType);
+                    localStorage.setItem('userData', JSON.stringify(data.userData));
+
+                    // Salvar credenciais se solicitado
+                    if (rememberCheckbox.checked) {
+                        localStorage.setItem('nomatv_username', username);
+                        localStorage.setItem('nomatv_password', password);
+                        localStorage.setItem('nomatv_remember', 'true');
+                    } else {
+                        localStorage.removeItem('nomatv_username');
+                        localStorage.removeItem('nomatv_password');
+                        localStorage.removeItem('nomatv_remember');
+                    }
+
+                    // Redirecionamento baseado no tipo de usuário
+                    setTimeout(() => {
+                        if (data.userType === 'admin') {
+                            console.log('🔄 Redirecionando para admin.html');
+                            window.location.href = '/admin.html';
+                        } else if (data.userType === 'revendedor') {
+                            console.log('🔄 Redirecionando para revendedor.html');
+                            window.location.href = '/revendedor.html';
+                        } else {
+                            console.error('❌ Tipo de usuário desconhecido:', data.userType);
+                            showError('Tipo de usuário não reconhecido.');
+                        }
+                    }, 2000);
+
+                } else {
+                    console.log('❌ Login falhou:', data.error);
+                    showError(data.error || 'Usuário ou senha incorretos.');
+                    
+                    // Limpar senha em caso de erro
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+
+            } catch (error) {
+                console.error('💥 Erro na requisição:', error);
+                showError('Erro de conexão com o servidor. Tente novamente.');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function setLoading(loading) {
+            loginBtn.disabled = loading;
+            
+            if (loading) {
+                spinner.style.display = 'inline-block';
+                btnText.textContent = 'Verificando...';
+            } else {
+                spinner.style.display = 'none';
+                btnText.textContent = 'Entrar no Sistema';
+            }
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+            
+            // Auto-hide após 5 segundos
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+
+        function clearMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        // Easter egg - pressione Ctrl+D para modo debug
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                console.log('🚀 NomaTV Debug Mode');
+                console.log('API Base:', API_BASE);
+                console.log('Token atual:', localStorage.getItem('token'));
+                console.log('Tipo usuário:', localStorage.getItem('userType'));
+            }
+        });
+
+        console.log('✅ Sistema de login NomaTV inicializado');
+    </script>
+</body>
+</html>

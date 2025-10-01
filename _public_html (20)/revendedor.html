@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NomaApp - Painel Revendedor v4.5</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-light: #818cf8;
+            --primary-dark: #3730a3;
+            --secondary-color: #06b6d4;
+            --accent-color: #f59e0b;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --text-dark: #1f2937;
+            --text-medium: #374151;
+            --text-light: #6b7280;
+            --text-lighter: #9ca3af;
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --border-color: #e2e8f0;
+            --border-light: #f1f5f9;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #06b6d4 100%);
+            --gradient-secondary: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --backdrop-blur: blur(16px);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+        .container { display: flex; min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-xl);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            backdrop-filter: var(--backdrop-blur);
+        }
+        .sidebar.collapsed { transform: translateX(-280px); }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+        }
+        .sidebar-header {
+            padding: 30px 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: var(--backdrop-blur);
+        }
+        .logo { 
+            font-size: 32px; 
+            font-weight: 800; 
+            color: #fff; 
+            margin-bottom: 12px; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: -0.5px;
+        }
+        .user-info { 
+            font-size: 15px; 
+            color: rgba(255,255,255,0.9); 
+            margin-bottom: 8px; 
+            font-weight: 500;
+        }
+        .user-role { 
+            font-size: 12px; 
+            color: rgba(255,255,255,0.8); 
+            background: rgba(255, 255, 255, 0.15); 
+            padding: 6px 12px; 
+            border-radius: 20px; 
+            display: inline-block; 
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .nav-menu { padding: 25px 0; }
+        .nav-item { 
+            padding: 18px 30px; 
+            cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            border-left: 4px solid transparent; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            margin: 2px 0;
+            position: relative;
+            font-weight: 500;
+        }
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 0;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 0 25px 25px 0;
+        }
+        .nav-item:hover::before { width: 100%; }
+        .nav-item:hover { 
+            background: rgba(255,255,255,0.08); 
+            border-left-color: rgba(255,255,255,0.5);
+            transform: translateX(5px);
+        }
+        .nav-item.active { 
+            background: rgba(255,255,255,0.15); 
+            border-left-color: #fff;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        .nav-item.active::before { width: 100%; }
+        .nav-icon { 
+            font-size: 20px; 
+            width: 24px; 
+            text-align: center; 
+            opacity: 0.9;
+        }
+
+        /* Main Content */
+        .main-content { flex: 1; margin-left: 280px; display: flex; flex-direction: column; transition: margin-left 0.3s ease; }
+        .main-content.expanded { margin-left: 0; }
+        @media (max-width: 768px) { .main-content { margin-left: 0; } }
+
+        .header { 
+            background: var(--bg-secondary); 
+            padding: 20px 35px; 
+            box-shadow: var(--shadow-md); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 1px solid var(--border-light);
+            backdrop-filter: var(--backdrop-blur);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .menu-toggle { 
+            display: block; 
+            background: none; 
+            border: none; 
+            font-size: 26px; 
+            cursor: pointer; 
+            color: var(--text-medium);
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        .menu-toggle:hover {
+            background: var(--bg-tertiary);
+            color: var(--primary-color);
+        }
+        .page-title { 
+            font-size: 28px; 
+            color: var(--text-dark); 
+            margin: 0; 
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .logout-btn { 
+            background: var(--gradient-secondary); 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+        .logout-btn:hover { 
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Content Area */
+        .content { 
+            flex: 1; 
+            padding: 35px; 
+            overflow-y: auto; 
+            background: var(--bg-primary);
+            min-height: calc(100vh - 80px);
+        }
+        .section-content { display: none; }
+        .section-content.active { 
+            display: block; 
+            animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        @keyframes fadeInUp { 
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            } 
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            } 
+        }
+
+        /* Stats Grid */
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 25px; 
+            margin-bottom: 35px; 
+        }
+        .stat-card { 
+            background: var(--bg-secondary); 
+            padding: 30px; 
+            border-radius: 16px; 
+            box-shadow: var(--shadow-lg); 
+            border: 1px solid var(--border-light); 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+        .stat-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: var(--shadow-xl);
+        }
+        .stat-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+        }
+        .stat-title { 
+            font-size: 15px; 
+            color: var(--text-light); 
+            font-weight: 600; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-icon { 
+            font-size: 28px; 
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stat-value { 
+            font-size: 36px; 
+            font-weight: 800; 
+            color: var(--text-dark);
+            letter-spacing: -1px;
+        }
+        
+        .ativos-card-header {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: flex-start;
+        }
+        .ativos-card-header .stat-title { margin-bottom: 0; }
+        .ativos-card-header select {
+            width: 100%;
+            max-width: 150px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Table Styles */
+        .table-container { 
+            background: var(--bg-secondary); 
+            border-radius: 16px; 
+            box-shadow: var(--shadow-lg); 
+            overflow: hidden; 
+            border: 1px solid var(--border-light);
+        }
+        .table-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 25px 30px; 
+            border-bottom: 1px solid var(--border-color); 
+            background: var(--bg-tertiary);
+        }
+        .table-title { 
+            font-size: 20px; 
+            color: var(--text-dark); 
+            margin: 0; 
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+        .filters { 
+            display: flex; 
+            gap: 20px; 
+            align-items: center; 
+            padding: 25px 30px; 
+            border-bottom: 1px solid var(--border-color); 
+            background: var(--bg-secondary);
+        }
+        .search-input, .form-select { 
+            padding: 12px 16px; 
+            border: 2px solid var(--border-color); 
+            border-radius: 10px; 
+            font-size: 14px; 
+            transition: all 0.3s ease;
+            background: var(--bg-secondary);
+        }
+        .search-input:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
+        .search-input { width: 280px; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th, .table td { 
+            padding: 18px 30px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--border-light); 
+        }
+        .table th { 
+            background: var(--bg-tertiary); 
+            font-weight: 700; 
+            color: var(--text-medium); 
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .table tbody tr { 
+            transition: all 0.2s ease;
+        }
+        .table tbody tr:hover { 
+            background: var(--bg-tertiary); 
+            transform: scale(1.01);
+        }
+
+        /* Buttons */
+        .btn { 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: 600; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            text-decoration: none; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 10px; 
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .btn:hover::before {
+            left: 100%;
+        }
+        .btn-primary { 
+            background: var(--gradient-primary); 
+            color: white; 
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-primary:hover { 
+            transform: translateY(-2px); 
+            box-shadow: var(--shadow-lg);
+        }
+        .btn-danger { 
+            background: var(--gradient-secondary); 
+            color: white; 
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-danger:hover { 
+            transform: translateY(-2px); 
+            box-shadow: var(--shadow-lg);
+        }
+        .btn-secondary { 
+            background: var(--bg-tertiary); 
+            color: var(--text-medium); 
+            border: 2px solid var(--border-color);
+        }
+        .btn-secondary:hover { 
+            background: var(--bg-secondary);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+        .btn-small { padding: 8px 14px; font-size: 12px; }
+        .btn-network { 
+            background: var(--gradient-success); 
+            color: white; 
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-network:hover { 
+            transform: translateY(-2px); 
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Status Badges */
+        .status-badge { 
+            padding: 6px 14px; 
+            border-radius: 20px; 
+            font-size: 12px; 
+            font-weight: 600; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .status-ativo { 
+            background: rgba(16, 185, 129, 0.1); 
+            color: var(--success-color); 
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+        .status-inativo { 
+            background: rgba(239, 68, 68, 0.1); 
+            color: var(--danger-color); 
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        /* Modal Styles */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 2000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0,0,0,0.6); 
+            backdrop-filter: var(--backdrop-blur); 
+        }
+        .modal.show { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            animation: modalFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        @keyframes modalFadeIn { 
+            from { opacity: 0; } 
+            to { opacity: 1; } 
+        }
+        .modal-content { 
+            background-color: var(--bg-secondary); 
+            border-radius: 20px; 
+            width: 90%; 
+            max-width: 600px; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            box-shadow: var(--shadow-xl); 
+            transform: scale(0.9); 
+            animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; 
+            border: 1px solid var(--border-light);
+        }
+        @keyframes modalSlideIn { 
+            to { transform: scale(1); } 
+        }
+        .modal-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 25px 30px; 
+            border-bottom: 1px solid var(--border-color); 
+            background: var(--bg-tertiary);
+            border-radius: 20px 20px 0 0;
+        }
+        .modal-header h3 { 
+            margin: 0; 
+            color: var(--text-dark); 
+            font-weight: 700;
+            font-size: 20px;
+        }
+        .modal-close { 
+            background: none; 
+            border: none; 
+            font-size: 28px; 
+            cursor: pointer; 
+            color: var(--text-light); 
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .modal-close:hover {
+            background: var(--bg-tertiary);
+            color: var(--danger-color);
+        }
+        .modal-body { padding: 30px; }
+        .modal-footer { 
+            display: flex; 
+            justify-content: flex-end; 
+            gap: 15px; 
+            padding: 25px 30px; 
+            border-top: 1px solid var(--border-color); 
+            background: var(--bg-tertiary);
+            border-radius: 0 0 20px 20px;
+        }
+
+        /* Modal Rede Específico */
+        .modal-rede { max-width: 500px; width: 90%; }
+        .rede-info { display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; }
+        .info-item { display: flex; align-items: center; gap: 12px; padding: 16px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff; }
+        .info-icon { font-size: 1.5em; min-width: 24px; }
+        .info-text { font-size: 1.1em; color: #333; }
+        .info-text strong { color: #007bff; font-weight: 600; }
+
+        /* Form Styles */
+        .form-group { margin-bottom: 25px; }
+        .form-label { 
+            display: block; 
+            margin-bottom: 10px; 
+            font-weight: 600; 
+            color: var(--text-medium); 
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-input, .form-select, .form-textarea { 
+            width: 100%; 
+            padding: 14px 16px; 
+            border: 2px solid var(--border-color); 
+            border-radius: 10px; 
+            font-size: 14px; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            background: var(--bg-secondary);
+            color: var(--text-medium);
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { 
+            outline: none; 
+            border-color: var(--primary-color); 
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            transform: translateY(-1px);
+        }
+        .form-row { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+        }
+
+        /* ✅ BRANDING STYLES PROFISSIONAIS */
+        .branding-container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+            gap: 35px; 
+            margin-top: 25px; 
+        }
+        .branding-info, .branding-upload { 
+            background: var(--bg-secondary); 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: var(--shadow-lg); 
+            border: 1px solid var(--border-light);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .branding-info::before, .branding-upload::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+        .branding-info:hover, .branding-upload:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+        .logo-preview-container { 
+            text-align: center; 
+            padding: 20px;
+            background: var(--bg-tertiary);
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        .logo-preview-img { 
+            max-width: 220px; 
+            max-height: 100px; 
+            border: 3px solid var(--border-color); 
+            border-radius: 12px; 
+            margin: 15px 0; 
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+        }
+        .logo-preview-img:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
+        }
+        .upload-area { 
+            border: 3px dashed var(--border-color); 
+            border-radius: 15px; 
+            padding: 50px 25px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            background: var(--bg-tertiary);
+            position: relative;
+            overflow: hidden;
+        }
+        .upload-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(79, 70, 229, 0.05), transparent);
+            transition: left 0.5s;
+        }
+        .upload-area:hover::before {
+            left: 100%;
+        }
+        .upload-area:hover, .upload-area.dragover { 
+            border-color: var(--primary-color); 
+            background: rgba(79, 70, 229, 0.05);
+            transform: translateY(-2px);
+        }
+        .upload-placeholder i { 
+            font-size: 56px; 
+            margin-bottom: 20px; 
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .upload-placeholder p {
+            font-weight: 600;
+            color: var(--text-medium);
+            margin: 15px 0;
+        }
+        .upload-placeholder small {
+            color: var(--text-light);
+            font-size: 13px;
+        }
+        .preview-image { 
+            max-width: 100%; 
+            max-height: 250px; 
+            border-radius: 12px; 
+            margin-top: 20px; 
+            box-shadow: var(--shadow-md);
+        }
+        .preview-actions { 
+            margin-top: 25px; 
+            display: flex; 
+            gap: 15px; 
+            justify-content: center; 
+        }
+        
+        /* ✅ ESTILOS PARA CAMPO ID E STATUS */
+        .logo-id-field { 
+            background: var(--bg-tertiary); 
+            color: var(--text-medium); 
+            cursor: not-allowed; 
+            font-family: 'JetBrains Mono', 'Courier New', monospace; 
+            font-weight: 700; 
+            text-align: center; 
+            font-size: 16px;
+            border: 2px solid var(--border-color);
+        }
+        .logo-status { 
+            padding: 12px 18px; 
+            border-radius: 10px; 
+            font-size: 14px; 
+            font-weight: 600; 
+            text-align: center; 
+            margin-bottom: 20px; 
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .logo-status.loading { 
+            background: rgba(245, 158, 11, 0.1); 
+            color: var(--warning-color); 
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+        .logo-status.success { 
+            background: rgba(16, 185, 129, 0.1); 
+            color: var(--success-color); 
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+        .logo-status.error { 
+            background: rgba(239, 68, 68, 0.1); 
+            color: var(--danger-color); 
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+        .logo-status.info { 
+            background: rgba(6, 182, 212, 0.1); 
+            color: var(--secondary-color); 
+            border-color: rgba(6, 182, 212, 0.2);
+        }
+        
+        /* ✅ SPINNER PERSONALIZADO */
+        .branding-spinner { 
+            display: inline-block; 
+            width: 24px; 
+            height: 24px; 
+            border: 3px solid rgba(79, 70, 229, 0.1); 
+            border-top: 3px solid var(--primary-color); 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+            margin-right: 10px; 
+        }
+        
+        /* ✅ TELA TRAVADA PROFISSIONAL */
+        .branding-lock { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: var(--backdrop-blur); 
+            z-index: 9998; 
+            display: none; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .branding-lock.active { display: flex; }
+        .branding-lock > div {
+            background: var(--bg-secondary);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border-light);
+            text-align: center;
+        }
+
+        /* Loading & Alert Styles */
+        .loading-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: var(--backdrop-blur); 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 9999; 
+        }
+        .loading-overlay.show { display: flex; }
+        .loading { 
+            display: inline-block; 
+            width: 50px; 
+            height: 50px; 
+            border: 4px solid rgba(79, 70, 229, 0.1); 
+            border-top: 4px solid var(--primary-color); 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .alert { 
+            padding: 18px 20px; 
+            border-radius: 12px; 
+            margin-bottom: 25px; 
+            position: relative; 
+            border-left: 4px solid; 
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .alert-success { 
+            background: rgba(16, 185, 129, 0.1); 
+            color: var(--success-color); 
+            border-left-color: var(--success-color); 
+        }
+        .alert-error { 
+            background: rgba(239, 68, 68, 0.1); 
+            color: var(--danger-color); 
+            border-left-color: var(--danger-color); 
+        }
+        .alert .close-btn { 
+            position: absolute; 
+            top: 15px; 
+            right: 18px; 
+            background: none; 
+            border: none; 
+            font-size: 20px; 
+            cursor: pointer; 
+            color: inherit; 
+            opacity: 0.7; 
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .alert .close-btn:hover {
+            opacity: 1;
+            background: rgba(0,0,0,0.1);
+        }
+
+        /* Empty States */
+        .empty-state { text-align: center; padding: 60px 40px; color: var(--text-light); }
+        .empty-state i { font-size: 64px; margin-bottom: 20px; color: #bdc3c7; }
+        .empty-state h3 { margin-bottom: 10px; color: var(--text-dark); }
+        
+        /* Billing Models */
+        .billing-models { margin-top: 10px; }
+        .billing-model {
+            border: 2px solid var(--border-color); border-radius: 8px; padding: 15px;
+            margin-bottom: 10px; cursor: pointer; transition: all 0.3s ease;
+            display: flex; align-items: flex-start; gap: 12px;
+        }
+        .billing-model:hover { border-color: #c7d2fe; }
+        .billing-model.selected { border-color: var(--primary-color); background-color: #f0f2ff; }
+        .billing-model input[type="radio"] { margin-top: 4px; flex-shrink: 0; }
+        .billing-model-title { font-weight: 600; color: #4a5568; margin-bottom: 5px; }
+        .billing-model-desc { font-size: 13px; color: #718096; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { display: block; }
+            .sidebar { transform: translateX(-100%); z-index: 1001; width: 250px; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .menu-toggle { display: block; font-size: 28px; }
+            .branding-container, .form-row, .stats-grid { grid-template-columns: 1fr; }
+            .filters { flex-direction: column; align-items: stretch; }
+            .search-input { width: 100%; }
+            .table-container { overflow-x: auto; }
+            .table { width: 700px; }
+        }
+        .mobile-overlay { 
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(0,0,0,0.5); z-index: 999; transition: opacity 0.3s ease; opacity: 0;
+        }
+        .mobile-overlay.active { display: block; opacity: 1; }
+    </style>
+</head>
+<body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading"></div>
+    </div>
+    
+    <!-- ✅ TELA TRAVADA PARA BRANDING -->
+    <div id="brandingLock" class="branding-lock">
+        <div style="text-align: center;">
+            <div class="branding-spinner"></div>
+            <div style="margin-top: 10px; font-weight: 500; color: #495057;">Processando...</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">📺 NomaApp</div>
+                <div class="user-info" id="userName">Carregando...</div>
+                <div class="user-role">Revendedor</div>
+            </div>
+            
+            <nav class="nav-menu">
+                <div class="nav-item active" onclick="showSection('dashboard', this)"><i class="nav-icon fas fa-chart-pie"></i> Dashboard</div>
+                <div class="nav-item" onclick="showSection('ativos', this)"><i class="nav-icon fas fa-tv"></i> Meus Ativos</div>
+                <div class="nav-item" onclick="showSection('provedores', this)"><i class="nav-icon fas fa-server"></i> Meus Provedores</div>
+                <div class="nav-item" onclick="showSection('revendedores', this)"><i class="nav-icon fas fa-users"></i> Minha Rede</div>
+                <div class="nav-item" onclick="showSection('branding', this)"><i class="nav-icon fas fa-palette"></i> Meu Branding</div>
+                <div class="nav-item" onclick="showSection('financeiro', this)"><i class="nav-icon fas fa-wallet"></i> Meu Financeiro</div>
+                <div class="nav-item" onclick="showSection('seguranca', this)"><i class="nav-icon fas fa-shield-alt"></i> Segurança</div>
+            </nav>
+        </div>
+
+        <div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileMenu()"></div>
+
+        <div class="main-content" id="mainContent">
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+                    <h1 class="page-title" id="pageTitle">Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <span id="currentUser">Carregando...</span>
+                    <button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+                </div>
+            </header>
+
+            <main class="content">
+                <div id="dashboard-content" class="section-content active">
+                    <div class="stats-grid" id="dashboardStats"></div>
+                </div>
+
+                <div id="ativos-content" class="section-content">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Meus Ativos da Rede</h2>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Client ID</th>
+                                    <th>Revendedor</th>
+                                    <th>Provedor</th>
+                                    <th>Status</th>
+                                    <th>Última Atividade</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ativosTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="provedores-content" class="section-content">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Meus Provedores da Rede</h2>
+                            <button class="btn btn-primary" onclick="openProvedorModal()"><i class="fas fa-plus"></i> Novo Provedor</button>
+                        </div>
+                        <table class="table">
+                            <thead><tr><th>Provedor</th><th>DNS</th><th>Revendedor</th><th>Tipo</th><th>Status</th><th>Ativos</th><th>Ações</th></tr></thead>
+                            <tbody id="provedoresTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="revendedores-content" class="section-content">
+                     <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Minha Rede Completa</h2>
+                            <button class="btn btn-primary" onclick="openRevendedorModal()"><i class="fas fa-plus"></i> Novo Revendedor</button>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Revendedor</th>
+                                    <th>Tipo</th>
+                                    <th>Status</th>
+                                    <th>Ativos / Limite</th>
+                                    <th>Provedores</th>
+                                    <th>Vencimento</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="revendedoresTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ✅ SESSÃO BRANDING COMPLETAMENTE REFATORADA -->
+                <div id="branding-content" class="section-content">
+                    <div style="margin-bottom: 20px;">
+                        <h2><i class="fas fa-palette"></i> Meu Branding</h2>
+                        <p style="color: #7f8c8d; margin-top: 8px;">Personalize a logo que aparece no aplicativo dos seus clientes.</p>
+                    </div>
+                    
+                    <div class="branding-container">
+                        <!-- ✅ INFO E PREVIEW -->
+                        <div class="branding-info">
+                            <h3 style="margin-bottom: 20px;"><i class="fas fa-id-card"></i> Identificação</h3>
+                            
+                            <!-- ✅ CAMPO ID READONLY -->
+                            <div class="form-group">
+                                <label class="form-label">ID da Logo:</label>
+                                <input type="text" id="logoFileName" class="form-input logo-id-field" readonly value="carregando...">
+                            </div>
+                            
+                            <!-- ✅ STATUS DINÂMICO -->
+                            <div id="logoStatus" class="logo-status info">
+                                <i class="fas fa-info-circle"></i> Verificando status...
+                            </div>
+                            
+                            <!-- ✅ PREVIEW DA LOGO ATUAL -->
+                            <div id="logoPreviewContainer" class="logo-preview-container" style="display: none;">
+                                <img id="logoAtual" src="" alt="Logo Atual" class="logo-preview-img">
+                                <div class="preview-actions">
+                                    <button class="btn btn-danger btn-small" onclick="excluirLogo()">
+                                        <i class="fas fa-trash"></i> Remover Logo
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- ✅ ÁREA DE UPLOAD -->
+                        <div class="branding-upload">
+                            <h3 style="margin-bottom: 20px;"><i class="fas fa-upload"></i> Upload de Logo</h3>
+                            
+                            <div class="upload-area" onclick="document.getElementById('file-input').click()" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p style="margin: 10px 0; font-weight: 500;">Clique ou arraste uma imagem PNG</p>
+                                    <small>300x300 a 500x500px • Máx: 150KB • Apenas PNG</small>
+                                </div>
+                                <img id="preview-img" style="display: none;" class="preview-image">
+                            </div>
+                            
+                            <input type="file" id="file-input" accept=".png" style="display: none;" onchange="previewImage(this)">
+                            
+                            <!-- ✅ BOTÕES DE AÇÃO -->
+                            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                                <button id="btn-salvar" class="btn btn-primary" disabled onclick="handleSalvarLogo()" style="flex: 1;">
+                                    <i class="fas fa-save"></i> Salvar Configuração
+                                </button>
+                                <button id="btn-trocar" class="btn btn-secondary" disabled onclick="handleTrocarLogo()" style="flex: 1; display: none;">
+                                    <i class="fas fa-sync-alt"></i> Trocar Logo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="financeiro-content" class="section-content">
+                     <div class="empty-state">
+                        <i class="fas fa-wallet"></i>
+                        <h3>Meu Financeiro</h3>
+                        <p>Esta funcionalidade estará disponível em breve.</p>
+                    </div>
+                </div>
+
+                <div id="seguranca-content" class="section-content">
+                    <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <form id="senhaForm">
+                            <div class="form-group">
+                                <h3 style="margin-bottom: 20px;"><i class="fas fa-key"></i> Alterar Senha</h3>
+                                <label class="form-label">Senha Atual</label>
+                                <input type="password" id="senhaAtual" class="form-input" required>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Nova Senha</label>
+                                    <input type="password" id="novaSenha" class="form-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Confirmar Nova Senha</label>
+                                    <input type="password" id="confirmarSenha" class="form-input" required>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Alterar Senha</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Revendedor -->
+    <div id="revendedorModal" class="modal"><div class="modal-content">
+        <div class="modal-header"><h3 id="revendedorModalTitle">Novo Revendedor</h3><button class="modal-close" onclick="closeModal('revendedorModal')">&times;</button></div>
+        <div class="modal-body">
+            <form id="revendedorForm">
+                <input type="hidden" id="revendedorId">
+                
+                <h4 style="margin-bottom: 15px; color: #4f46e5;">Dados de Acesso</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="revendedorNome">Nome Completo</label>
+                        <input type="text" id="revendedorNome" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="revendedorUsuario">Nome de Usuário</label>
+                        <input type="text" id="revendedorUsuario" class="form-input" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="revendedorSenha">Senha</label>
+                    <input type="password" id="revendedorSenha" class="form-input" required>
+                    <small style="color: #6b7280;">Deixe em branco para manter a senha atual ao editar.</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="revendedorEmail">Email (Opcional)</label>
+                    <input type="email" id="revendedorEmail" class="form-input">
+                </div>
+
+                <h4 style="margin: 25px 0 15px; color: #4f46e5;">Configurações e Faturamento</h4>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="revendedorMaster">Tipo de Painel</label>
+                        <select id="revendedorMaster" class="form-select">
+                            <option value="nao">Sub-Revendedor</option>
+                            <option value="sim">Revendedor Master</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="revendedorPlano">Plano</label>
+                        <select id="revendedorPlano" class="form-select">
+                            <option value="Básico">📦 Básico (Padrão)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="revendedorLimiteAtivos">Limite de Ativos</label>
+                    <input type="number" id="revendedorLimiteAtivos" class="form-input" value="100" placeholder="0 = Ilimitado">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Modelo de Cobrança</label>
+                    <div class="billing-models">
+                        <div class="billing-model" onclick="updateBillingSelection(this.querySelector('input'))">
+                            <input type="radio" name="tipo_cobranca" value="por_ativo">
+                            <div>
+                                <div class="billing-model-title">Cobrança por Ativo</div>
+                                <div class="billing-model-desc">Paga com base no número de clientes ativos.</div>
+                            </div>
+                        </div>
+                        <div class="billing-model selected" onclick="updateBillingSelection(this.querySelector('input'))">
+                            <input type="radio" name="tipo_cobranca" value="mensal" checked>
+                            <div>
+                                <div class="billing-model-title">Mensalista Fixo</div>
+                                <div class="billing-model-desc">Paga um valor fixo mensal (PADRÃO).</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="revendedorValorCobranca">Valor da Cobrança (R$)</label>
+                        <input type="text" id="revendedorValorCobranca" class="form-input" value="50,00" placeholder="50,00">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="revendedorVencimento">Data de Vencimento</label>
+                        <input type="date" id="revendedorVencimento" class="form-input">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('revendedorModal')">Cancelar</button>
+            <button class="btn btn-primary" id="btnSalvarRevendedor" onclick="salvarRevendedor()">Salvar</button>
+        </div>
+    </div></div>
+    
+    <!-- ✅ MODAL PROVEDOR CORRIGIDO - APENAS 3 CAMPOS + READONLY -->
+    <div id="provedorModal" class="modal"><div class="modal-content">
+        <div class="modal-header"><h3 id="provedorModalTitle">Novo Provedor</h3><button class="modal-close" onclick="closeModal('provedorModal')">&times;</button></div>
+        <div class="modal-body">
+            <form id="provedorForm">
+                <input type="hidden" id="provedorId">
+                
+                <!-- ✅ CAMPO READONLY REVENDEDOR -->
+                <div class="form-group">
+                    <label class="form-label">Revendedor Ativo</label>
+                    <input type="text" id="provedorRevendedor" class="form-input logo-id-field" readonly value="carregando...">
+                </div>
+                
+                <!-- ✅ APENAS 3 CAMPOS EDITÁVEIS -->
+                <div class="form-group">
+                    <label class="form-label">Nome do Provedor *</label>
+                    <input type="text" id="provedorNome" class="form-input" required placeholder="Ex: IPTV Premium">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">DNS/URL *</label>
+                    <input type="text" id="provedorDns" class="form-input" required placeholder="Ex: servidor.tv:8080">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="provedorStatus" class="form-select">
+                        <option value="1">Ativo</option>
+                        <option value="0">Inativo</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('provedorModal')">Cancelar</button>
+            <button class="btn btn-primary" onclick="salvarProvedor()">Salvar</button>
+        </div>
+    </div></div>
+
+    <!-- Modal de Confirmação -->
+    <div id="confirmModal" class="modal"><div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header"><h3 id="confirmTitle">Confirmar</h3><button class="modal-close" onclick="closeModal('confirmModal')">&times;</button></div>
+        <div class="modal-body"><p id="confirmMessage">Tem certeza?</p></div>
+        <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('confirmModal')">Cancelar</button><button class="btn btn-primary" id="confirmButton">Confirmar</button></div>
+    </div></div>
+    
+    <!-- ✅ NOVO: Modal "Ver Rede" -->
+    <div id="modalRedeRevendedor" class="modal">
+        <div class="modal-content modal-rede">
+            <div class="modal-header">
+                <h3 id="tituloRede">🌐 Rede de Revendedor</h3>
+                <button class="modal-close" onclick="fecharModalRede()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="rede-info">
+                    <div class="info-item">
+                        <span class="info-icon">📱</span>
+                        <span class="info-text">Ativos Totais: <strong id="ativosTotal">0</strong></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">👥</span>
+                        <span class="info-text">Total na Rede: <strong id="totalRede">0</strong> revendedores</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">🎯</span>
+                        <span class="info-text">
+                            Diretos: <strong id="totalDiretos">0</strong> | 
+                            Indiretos: <strong id="totalIndiretos">0</strong>
+                        </span>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-success" onclick="gerarFaturaRede()" style="width: 100%; padding: 12px 24px; font-size: 1.1em; font-weight: 600;">
+                        💰 Gerar Fatura
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="api.js"></script>
+    <script>
+        // =================================================================
+        // 📦 NomaApp - Painel Revendedor v4.5 (LÓGICA DE SESSÃO DO LOGIN)
+        // =================================================================
+        
+        checkAuthentication();
+        
+        let appState = {
+            user: null,
+            provedores: [],
+            revendedores: [],
+            ativos: [],
+            branding: {}
+        };
+        let currentEditingId = null;
+        let confirmCallback = null;
+
+        // ✅ ADICIONAR AQUI (antes da linha 562)
+        function debugSessionStorage() {
+            console.log('🔍 === DEBUG SESSION STORAGE ===');
+            console.log('revendedorId:', sessionStorage.getItem('revendedorId'));
+            console.log('masterType:', sessionStorage.getItem('masterType'));
+            console.log('userName:', sessionStorage.getItem('userName'));
+            console.log('appState.user:', appState.user);
+            console.log('🔍 === FIM DEBUG ===');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            debugSessionStorage();
+
+            // ✅ CORRIGIDO (usa sessionStorage):
+            appState.user = { 
+                nome: sessionStorage.getItem('userName') || 'Usuário',
+                master: sessionStorage.getItem('masterType'),
+                id_revendedor: sessionStorage.getItem('revendedorId')
+            };
+            
+            document.getElementById('userName').textContent = 'Revendedor';
+            document.getElementById('currentUser').textContent = 'Revendedor';
+            
+            const firstNavItem = document.querySelector('.nav-item.active');
+            if (firstNavItem) {
+                showSection('dashboard', firstNavItem);
+            }
+        });
+
+        async function handleLogout() {
+            showConfirm('Sair do Sistema', 'Tem certeza que deseja sair?', () => {
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+            });
+        }
+
+        // --- NAVEGAÇÃO ---
+        function showSection(section, element) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+            document.querySelectorAll('.section-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(section + '-content').classList.add('active');
+            document.getElementById('pageTitle').textContent = element.textContent.trim();
+            
+            switch(section) {
+                case 'dashboard': loadDashboard(); break;
+                case 'ativos': loadAtivos(); break;
+                case 'provedores': loadProvedores(); break;
+                case 'revendedores': loadRevendedores(); break;
+                case 'branding': loadBranding(); break;
+            }
+            
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) closeMobileMenu();
+        }
+        
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const isMobile = window.innerWidth <= 768;
+
+            if (isMobile) {
+                const overlay = document.getElementById('mobileOverlay');
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            } else {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+            }
+        }
+        
+        function closeMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
+        // --- DASHBOARD ---
+        let currentAtivosView = 'meus';
+        async function loadDashboard() {
+            try {
+                showLoading();
+                const response = await getDashboardStats();
+                const stats = response.data || {};
+                
+                const meusAtivos = stats.meusAtivos || 0;
+                const todosAtivos = stats.redeAtivos || 0;
+                const provedoresAtivos = stats.provedoresAtivos || 0;
+                const totalRevendedores = stats.totalRevendedores || 0;
+                
+                document.getElementById('dashboardStats').innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Provedores da Rede</span>
+                            <i class="stat-icon fas fa-server"></i>
+                        </div>
+                        <div class="stat-value">${provedoresAtivos}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header ativos-card-header">
+                            <span class="stat-title">Ativos</span>
+                            <select onchange="updateAtivosDashboardView(this.value)">
+                                <option value="meus" selected>Meus Ativos</option>
+                                <option value="rede">Rede Completa</option>
+                            </select>
+                        </div>
+                        <div class="stat-value" id="ativosDashboardValue">${meusAtivos}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Minha Rede</span>
+                            <i class="stat-icon fas fa-users"></i>
+                        </div>
+                        <div class="stat-value">${totalRevendedores}</div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Erro ao carregar dashboard:', error);
+                showAlert('Erro ao carregar estatísticas do dashboard.', 'error');
+                document.getElementById('dashboardStats').innerHTML = '<p class="empty-state">Não foi possível carregar as estatísticas.</p>';
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function updateAtivosDashboardView(view) {
+            currentAtivosView = view;
+            const meusAtivos = 0;
+            const redeAtivos = 0;
+            const valueElement = document.getElementById('ativosDashboardValue');
+            
+            if (valueElement) {
+                valueElement.textContent = view === 'meus' ? meusAtivos : redeAtivos;
+            }
+        }
+        
+        // --- ATIVOS DA REDE ---
+        async function loadAtivos() {
+            try {
+                showLoading('Carregando ativos da rede...');
+                const response = await getClientIds();
+                appState.ativos = response.data || [];
+                renderAtivos();
+            } catch (error) {
+                console.error('Erro ao carregar ativos:', error);
+                showAlert('Erro ao carregar ativos da rede.', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function renderAtivos() {
+            const tbody = document.getElementById('ativosTableBody');
+            if (appState.ativos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fas fa-tv"></i><h3>Nenhum ativo encontrado</h3><p>Sua rede ainda não possui clientes ativos.</p></td></tr>';
+                return;
+            }
+            tbody.innerHTML = appState.ativos.map(a => `
+                <tr>
+                    <td><code>${a.client_id}</code></td>
+                    <td>${a.revendedor_nome || 'N/A'}</td> 
+                    <td>${a.provedor_nome}</td>
+                    <td><span class="status-badge status-${a.ativo ? 'ativo' : 'inativo'}">${a.ativo ? 'Ativo' : 'Inativo'}</span></td>
+                    <td>${a.ultima_atividade ? new Date(a.ultima_atividade).toLocaleString('pt-BR') : 'N/A'}</td>
+                    <td>
+                        <button class="btn btn-secondary btn-small" onclick="toggleAtivoStatus('${a.client_id}', ${a.ativo})">
+                            <i class="fas fa-power-off"></i>
+                        </button>
+                        <button class="btn btn-danger btn-small" onclick="excluirAtivo('${a.client_id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // --- PROVEDORES DA REDE ---
+        async function loadProvedores() {
+            try {
+                showLoading();
+                const response = await listarProvedores();
+                appState.provedores = response.data || [];
+                renderProvedores();
+            } catch (error) {
+                console.error('Erro ao carregar provedores:', error);
+                showAlert('Erro ao carregar provedores da rede.', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function renderProvedores() {
+            const tbody = document.getElementById('provedoresTableBody');
+            if (appState.provedores.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-server"></i><h3>Nenhum provedor encontrado</h3><p>Clique em "Novo Provedor" para começar.</p></td></tr>';
+                return;
+            }
+            tbody.innerHTML = appState.provedores.map(p => `
+                <tr>
+                    <td>${p.nome}</td>
+                    <td>${p.dns}</td>
+                    <td>${p.revendedor_nome || 'N/A'}</td>
+                    <td>${p.tipo || 'xtream'}</td>
+                    <td><span class="status-badge status-${p.ativo ? 'ativo' : 'inativo'}">${p.ativo ? 'Ativo' : 'Inativo'}</span></td>
+                    <td>${p.clientes_ativos || 0}</td>
+                    <td>
+                        <button class="btn btn-secondary btn-small" onclick="openProvedorModal(${p.id_provedor})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger btn-small" onclick="excluirProvedor(${p.id_provedor})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // ✅ FUNÇÃO CORRIGIDA: openProvedorModal
+        function openProvedorModal(id = null) {
+            currentEditingId = id;
+            const form = document.getElementById('provedorForm');
+            form.reset();
+            
+            // ✅ PREENCHER CAMPO READONLY COM SESSIONSTORAGE
+            const userName = sessionStorage.getItem('userName') || 'Usuário';
+            document.getElementById('provedorRevendedor').value = userName;
+            
+            if (id) {
+                const provedor = appState.provedores.find(p => p.id_provedor === id);
+                document.getElementById('provedorModalTitle').textContent = 'Editar Provedor';
+                document.getElementById('provedorId').value = provedor.id_provedor;
+                document.getElementById('provedorNome').value = provedor.nome;
+                document.getElementById('provedorDns').value = provedor.dns;
+                document.getElementById('provedorStatus').value = provedor.ativo ? 1 : 0;
+            } else {
+                document.getElementById('provedorModalTitle').textContent = 'Novo Provedor';
+            }
+            document.getElementById('provedorModal').classList.add('show');
+        }
+
+        // ✅ FUNÇÃO CORRIGIDA: salvarProvedor
+        async function salvarProvedor() {
+            const data = {
+                nome: document.getElementById('provedorNome').value,
+                dns: document.getElementById('provedorDns').value,
+                ativo: parseInt(document.getElementById('provedorStatus').value),
+                // ✅ DADOS MOCKADOS APLICADOS AUTOMATICAMENTE
+                id_revendedor: sessionStorage.getItem('revendedorId'),
+                usuario: sessionStorage.getItem('userName') || 'admin',
+                senha: 'dadomockado',
+                tipo: 'xtream'
+            };
+            
+            try {
+                showLoading();
+                if (currentEditingId) {
+                    await atualizarProvedor(currentEditingId, data);
+                    showAlert('Provedor atualizado com sucesso!', 'success');
+                } else {
+                    await criarProvedor(data);
+                    showAlert('Provedor criado com sucesso!', 'success');
+                }
+                closeModal('provedorModal');
+                loadProvedores();
+            } catch (error) {
+                showAlert('Erro ao salvar provedor: ' + (error.error || error.message), 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function excluirProvedor(id) {
+            showConfirm('Excluir Provedor', 'Tem certeza que deseja excluir este provedor? Esta ação não pode ser desfeita.', async () => {
+                try {
+                    showLoading();
+                    await deletarProvedor(id);
+                    showAlert('Provedor excluído com sucesso!', 'success');
+                    loadProvedores();
+                } catch (error) {
+                    showAlert('Erro ao excluir provedor: ' + (error.error || error.message), 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+        }
+        
+        // --- REVENDEDORES DA REDE COMPLETA ---
+        async function loadRevendedores() {
+            try {
+                showLoading();
+                const response = await listarRevendedores();
+                appState.revendedores = response.data || [];
+                renderRevendedores();
+            } catch (error) {
+                showAlert('Erro ao carregar revendedores da rede.', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function renderRevendedores() {
+            const tbody = document.getElementById('revendedoresTableBody');
+            if (appState.revendedores.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-users"></i><h3>Nenhum revendedor na sua rede</h3><p>Sua rede ainda não possui revendedores.</p></td></tr>';
+                return;
+            }
+            tbody.innerHTML = appState.revendedores.map(s => {
+                const tipoText = s.master === 'sim' ? 'MASTER' : (s.master === 'nao' ? 'SUB' : 'N/A');
+                let tipoClass = '';
+                if(s.master === 'sim') tipoClass = 'status-ativo';
+                else if(s.master === 'nao') tipoClass = 'status-inativo';
+                const statusClass = s.ativo ? 'ativo' : 'inativo';
+                const statusText = s.ativo ? 'Ativo' : 'Inativo';
+                const ativosCount = s.ativos_count || 0;
+                const limiteAtivos = s.limite_ativos || 0;
+                const provedoresCount = s.provedores_count || 0;
+                const dataVencimento = s.data_vencimento ? new Date(s.data_vencimento + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+
+                return `
+                    <tr>
+                        <td><code>${s.id_revendedor}</code></td>
+                        <td>
+                            <div style="font-weight: 600;">${s.nome}</div>
+                            <div style="font-size: 12px; color: #6b7280;">${s.usuario}</div>
+                        </td>
+                        <td><span class="status-badge ${tipoClass}">${tipoText}</span></td>
+                        <td><span class="status-badge status-${statusClass}">${statusText}</span></td>
+                        <td>${ativosCount} / ${limiteAtivos === 0 ? '∞' : limiteAtivos}</td>
+                        <td>${provedoresCount}</td>
+                        <td>${dataVencimento}</td>
+                        <td>
+                            <button class="btn btn-secondary btn-small" onclick="openRevendedorModal('${s.id_revendedor}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger btn-small" onclick="excluirRevendedor('${s.id_revendedor}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="btn btn-network btn-small" onclick="verRedeRevendedor('${s.id_revendedor}', '${s.nome}')" title="Ver Rede">
+                                🌐
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // ✅ NOVA FUNÇÃO: Ver Rede do Revendedor (Botão 🌐)
+        async function verRedeRevendedor(idRevendedor, nomeRevendedor) {
+            try {
+                showLoading(`Carregando rede de ${nomeRevendedor}...`);
+                
+                const response = await fetch(`/api/rede_revendedor.php?id=${idRevendedor}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    abrirModalRede(nomeRevendedor, data.data.metricas);
+                } else {
+                    showAlert('Erro ao carregar rede: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Erro de conexão ao carregar rede.', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function abrirModalRede(nomeRevendedor, metricas) {
+            document.getElementById('tituloRede').textContent = `🌐 Rede de ${nomeRevendedor}`;
+            document.getElementById('ativosTotal').textContent = metricas.ativos_total;
+            document.getElementById('totalRede').textContent = metricas.total_revendedores;
+            document.getElementById('totalDiretos').textContent = metricas.revendedores_diretos;
+            document.getElementById('totalIndiretos').textContent = metricas.revendedores_indiretos;
+            document.getElementById('modalRedeRevendedor').classList.add('show');
+        }
+
+        function fecharModalRede() {
+            document.getElementById('modalRedeRevendedor').classList.remove('show');
+        }
+
+        function gerarFaturaRede() {
+            showAlert('Funcionalidade de faturamento em desenvolvimento', 'info');
+        }
+        
+        function openRevendedorModal(id = null) {
+            currentEditingId = id;
+            const form = document.getElementById('revendedorForm');
+            form.reset();
+            
+            if (id) {
+                const revendedor = appState.revendedores.find(r => r.id_revendedor === id);
+                if (revendedor) {
+                    document.getElementById('revendedorModalTitle').textContent = `Editar Revendedor: ${revendedor.nome}`;
+                    document.getElementById('revendedorId').value = revendedor.id_revendedor;
+                    document.getElementById('revendedorNome').value = revendedor.nome;
+                    document.getElementById('revendedorUsuario').value = revendedor.usuario;
+                    document.getElementById('revendedorMaster').value = revendedor.master;
+                    document.getElementById('revendedorLimiteAtivos').value = revendedor.limite_ativos;
+                    document.getElementById('revendedorVencimento').value = revendedor.data_vencimento;
+                    const billingType = revendedor.valor_mensal !== null ? 'mensal' : 'por_ativo';
+                    document.querySelector(`input[name="tipo_cobranca"][value="${billingType}"]`).checked = true;
+                    document.getElementById('revendedorValorCobranca').value = formatarValorParaFrontend(revendedor.valor_mensal || revendedor.valor_ativo);
+                    updateBillingSelection(document.querySelector(`input[name="tipo_cobranca"][value="${billingType}"]`));
+                }
+            } else {
+                document.getElementById('revendedorModalTitle').textContent = 'Novo Revendedor';
+                document.getElementById('revendedorVencimento').value = getDataPadrao();
+                document.querySelector('input[name="tipo_cobranca"][value="mensal"]').checked = true;
+                document.getElementById('revendedorValorCobranca').value = '50,00';
+                updateBillingSelection(document.querySelector('input[name="tipo_cobranca"][value="mensal"]'));
+            }
+            
+            const planoSelect = document.getElementById('revendedorPlano');
+            planoSelect.innerHTML = '<option value="">Carregando...</option>';
+            listarPlanos().then(response => {
+                if (response.success && response.data) {
+                    planoSelect.innerHTML = response.data.map(p => 
+                        `<option value="${p.nome}" ${p.nome === (revendedor?.plano || 'Básico') ? 'selected' : ''}>${p.nome}</option>`
+                    ).join('');
+                }
+            }).catch(e => {
+                planoSelect.innerHTML = '<option value="Básico" selected>📦 Básico (Padrão)</option>';
+            });
+
+            document.getElementById('revendedorModal').classList.add('show');
+        }
+
+        async function salvarRevendedor() {
+            const data = {
+                nome: document.getElementById('revendedorNome').value.trim(),
+                usuario: document.getElementById('revendedorUsuario').value.trim(),
+                senha: document.getElementById('revendedorSenha').value,
+                email: document.getElementById('revendedorEmail').value.trim(),
+                master: document.getElementById('revendedorMaster').value,
+                plano: document.getElementById('revendedorPlano').value,
+                limite_ativos: parseInt(document.getElementById('revendedorLimiteAtivos').value),
+                tipo_cobranca: document.querySelector('input[name="tipo_cobranca"]:checked').value,
+                valor_cobranca: parseFloat(formatarValorParaBackend(document.getElementById('revendedorValorCobranca').value)),
+                data_vencimento: document.getElementById('revendedorVencimento').value
+            };
+            
+            if (currentEditingId && data.senha === '') {
+                delete data.senha;
+            }
+            
+            try {
+                showLoading();
+                if (currentEditingId) {
+                    await atualizarRevendedor(currentEditingId, data);
+                    showAlert('Revendedor atualizado com sucesso!', 'success');
+                } else {
+                    await criarRevendedor(data);
+                    showAlert('Revendedor criado com sucesso!', 'success');
+                }
+                closeModal('revendedorModal');
+                loadRevendedores();
+            } catch (error) {
+                showAlert('Erro ao salvar revendedor: ' + (error.error || error.message), 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function excluirRevendedor(id) {
+            showConfirm('Excluir Revendedor', 'Tem certeza que deseja excluir este revendedor? Esta ação não pode ser desfeita.', async () => {
+                try {
+                    showLoading();
+                    await deletarRevendedor(id);
+                    showAlert('Revendedor excluído com sucesso!', 'success');
+                    loadRevendedores();
+                } catch (error) {
+                    showAlert('Erro ao excluir revendedor: ' + (error.error || error.message), 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+        }
+        
+        // ✅ =================================================================
+        // 🎨 BRANDING - SESSÃO COMPLETAMENTE REFATORADA
+        // ✅ =================================================================
+        
+        // ✅ VARIÁVEIS GLOBAIS BRANDING
+        let brandingState = {
+            hasLogo: false,
+            currentFile: null,
+            revendedorId: null
+        };
+
+        // ✅ FUNÇÃO PRINCIPAL: CARREGAR BRANDING
+        async function loadBranding() {
+            try {
+                // ✅ BUSCAR DADOS DO SESSIONSTORAGE (NÃO MAIS DA API)
+                brandingState.revendedorId = sessionStorage.getItem('revendedorId');
+                
+                if (!brandingState.revendedorId) {
+                    updateBrandingStatus('error', 'Erro: ID do revendedor não encontrado na sessão.');
+                    return;
+                }
+
+                // ✅ DEFINIR NOME DO ARQUIVO FIXO
+                const logoFileName = brandingState.revendedorId + '.png';
+                document.getElementById('logoFileName').value = logoFileName;
+
+                updateBrandingStatus('loading', 'Verificando logo existente...');
+
+                // ✅ VERIFICAR SE JÁ EXISTE LOGO NO BACKEND
+                const response = await getBrandingLogo();
+                
+                if (response.success && response.data.has_logo) {
+                    // ✅ TEM LOGO - MOSTRAR PREVIEW E BOTÃO TROCAR
+                    brandingState.hasLogo = true;
+                    mostrarLogoExistente(response.data.proxy_url);
+                    updateBrandingStatus('success', 'Logo carregada com sucesso!');
+                } else {
+                    // ✅ NÃO TEM LOGO - MOSTRAR ÁREA DE UPLOAD
+                    brandingState.hasLogo = false;
+                    mostrarAreaUpload();
+                    updateBrandingStatus('info', 'Nenhuma logo encontrada. Você pode fazer upload de uma nova logo.');
+                }
+
+            } catch (error) {
+                console.error('Erro ao carregar branding:', error);
+                updateBrandingStatus('error', 'Erro ao verificar status da logo.');
+                mostrarAreaUpload();
+            }
+        }
+
+        // ✅ FUNÇÃO: MOSTRAR LOGO EXISTENTE
+        function mostrarLogoExistente(proxyUrl) {
+            document.getElementById('logoPreviewContainer').style.display = 'block';
+            document.getElementById('logoAtual').src = proxyUrl + `?t=${new Date().getTime()}`;
+            
+            // ✅ MOSTRAR BOTÃO TROCAR (ocultar SALVAR)
+            document.getElementById('btn-trocar').style.display = 'inline-flex';
+            document.getElementById('btn-salvar').style.display = 'none';
+        }
+
+        // ✅ FUNÇÃO: MOSTRAR ÁREA DE UPLOAD
+        function mostrarAreaUpload() {
+            document.getElementById('logoPreviewContainer').style.display = 'none';
+            
+            // ✅ MOSTRAR BOTÃO SALVAR (ocultar TROCAR)
+            document.getElementById('btn-salvar').style.display = 'inline-flex';
+            document.getElementById('btn-trocar').style.display = 'none';
+        }
+
+        // ✅ FUNÇÃO: ATUALIZAR STATUS
+        function updateBrandingStatus(type, message) {
+            const statusElement = document.getElementById('logoStatus');
+            statusElement.className = `logo-status ${type}`;
+            
+            const icons = {
+                loading: 'fas fa-spinner fa-spin',
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+            
+            statusElement.innerHTML = `<i class="${icons[type]}"></i> ${message}`;
+        }
+
+        // ✅ FUNÇÃO: PREVIEW DA IMAGEM COM VALIDAÇÃO E RENOMEAÇÃO
+        function previewImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            // ✅ VALIDAÇÃO: APENAS PNG
+            if (file.type !== 'image/png') {
+                updateBrandingStatus('error', 'Apenas arquivos PNG são aceitos!');
+                resetFileInput();
+                return;
+            }
+
+            // ✅ VALIDAÇÃO: TAMANHO MÁXIMO 150KB
+            const maxSize = 150 * 1024; // 150KB
+            if (file.size > maxSize) {
+                updateBrandingStatus('error', `Arquivo muito grande! Máximo: 150KB. Atual: ${Math.round(file.size / 1024)}KB`);
+                resetFileInput();
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = new Image();
+                img.onload = () => {
+                    // ✅ VALIDAÇÃO: DIMENSÕES 300x300 a 500x500
+                    const validacao = validarDimensoesImagem(img.width, img.height);
+                    if (validacao !== null) {
+                        updateBrandingStatus('error', validacao);
+                        resetFileInput();
+                        return;
+                    }
+
+                    // ✅ RENOMEAÇÃO INSTANTÂNEA
+                    const novoNome = brandingState.revendedorId + '.png';
+                    const renamedFile = new File([file], novoNome, { type: file.type });
+                    brandingState.currentFile = renamedFile;
+
+                    // ✅ MOSTRAR PREVIEW
+                    document.getElementById('preview-img').src = e.target.result;
+                    document.getElementById('preview-img').style.display = 'block';
+                    document.querySelector('.upload-placeholder').style.display = 'none';
+
+                    // ✅ HABILITAR BOTÕES
+                    document.getElementById('btn-salvar').disabled = false;
+                    document.getElementById('btn-trocar').disabled = false;
+
+                    updateBrandingStatus('success', `Logo válida! Será salva como: ${novoNome}`);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ✅ FUNÇÃO: VALIDAR DIMENSÕES
+        function validarDimensoesImagem(largura, altura) {
+            if (largura < 300 || altura < 300) {
+                return `Dimensões muito pequenas! Mínimo: 300x300px. Atual: ${largura}x${altura}px`;
+            }
+            if (largura > 500 || altura > 500) {
+                return `Dimensões muito grandes! Máximo: 500x500px. Atual: ${largura}x${altura}px`;
+            }
+            return null; // Válida
+        }
+
+        // ✅ FUNÇÃO: RESETAR INPUT FILE
+        function resetFileInput() {
+            document.getElementById('file-input').value = '';
+            document.getElementById('preview-img').style.display = 'none';
+            document.querySelector('.upload-placeholder').style.display = 'block';
+            document.getElementById('btn-salvar').disabled = true;
+            document.getElementById('btn-trocar').disabled = true;
+            brandingState.currentFile = null;
+        }
+
+        // ✅ FUNÇÃO: SALVAR CONFIGURAÇÃO (UPLOAD INICIAL)
+        async function handleSalvarLogo() {
+            if (!brandingState.currentFile) {
+                updateBrandingStatus('error', 'Selecione uma imagem primeiro!');
+                return;
+            }
+
+            try {
+                travarTelaBranding();
+                updateBrandingStatus('loading', 'Salvando configuração...');
+
+                // ✅ UPLOAD DIRETO (sem logo anterior)
+                await uploadBrandingLogo(brandingState.currentFile);
+
+                updateBrandingStatus('success', 'Logo salva com sucesso!');
+                showAlert('Logo salva com sucesso!', 'success');
+                
+                // ✅ RECARREGAR BRANDING
+                resetFileInput();
+                loadBranding();
+
+            } catch (error) {
+                console.error('Erro ao salvar logo:', error);
+                updateBrandingStatus('error', 'Erro ao salvar logo: ' + (error.error || error.message));
+                showAlert('Erro ao salvar logo: ' + (error.error || error.message), 'error');
+            } finally {
+                destravarTelaBranding();
+            }
+        }
+
+        // ✅ FUNÇÃO: TROCAR LOGO (DELETE + UPLOAD)
+        async function handleTrocarLogo() {
+            if (!brandingState.currentFile) {
+                updateBrandingStatus('error', 'Selecione uma nova imagem primeiro!');
+                return;
+            }
+
+            try {
+                travarTelaBranding();
+                updateBrandingStatus('loading', 'Removendo logo atual e salvando nova...');
+
+                // ✅ ENGENHARIA BACKEND: Delete automático + Upload (via upload.php)
+                await uploadBrandingLogo(brandingState.currentFile);
+
+                updateBrandingStatus('success', 'Logo trocada com sucesso!');
+                showAlert('Logo trocada com sucesso!', 'success');
+                
+                // ✅ RECARREGAR BRANDING
+                resetFileInput();
+                loadBranding();
+
+            } catch (error) {
+                console.error('Erro ao trocar logo:', error);
+                updateBrandingStatus('error', 'Erro ao trocar logo: ' + (error.error || error.message));
+                showAlert('Erro ao trocar logo: ' + (error.error || error.message), 'error');
+            } finally {
+                destravarTelaBranding();
+            }
+        }
+
+        // ✅ FUNÇÃO: EXCLUIR LOGO
+        function excluirLogo() {
+            showConfirm('Excluir Logo', 'Tem certeza que deseja remover sua logo personalizada?', async () => {
+                try {
+                    travarTelaBranding();
+                    updateBrandingStatus('loading', 'Removendo logo...');
+
+                    await deleteBrandingLogo();
+
+                    updateBrandingStatus('success', 'Logo removida com sucesso!');
+                    showAlert('Logo removida com sucesso!', 'success');
+                    
+                    // ✅ RECARREGAR BRANDING
+                    loadBranding();
+
+                } catch (error) {
+                    console.error('Erro ao remover logo:', error);
+                    updateBrandingStatus('error', 'Erro ao remover logo: ' + (error.error || error.message));
+                    showAlert('Erro ao remover logo: ' + (error.error || error.message), 'error');
+                } finally {
+                    destravarTelaBranding();
+                }
+            });
+        }
+
+        // ✅ FUNÇÃO: TRAVAR TELA (SPINNER + BLOQUEIO)
+        function travarTelaBranding() {
+            document.getElementById('brandingLock').classList.add('active');
+        }
+
+        // ✅ FUNÇÃO: DESTRAVAR TELA
+        function destravarTelaBranding() {
+            document.getElementById('brandingLock').classList.remove('active');
+        }
+
+        // ✅ FUNÇÕES DE DRAG & DROP (mantidas)
+        function handleDragOver(e) { 
+            e.preventDefault(); 
+            e.currentTarget.classList.add('dragover'); 
+        }
+        
+        function handleDragLeave(e) { 
+            e.currentTarget.classList.remove('dragover'); 
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('file-input').files = files;
+                previewImage(document.getElementById('file-input'));
+            }
+        }
+
+        // --- UTILITÁRIOS ---
+        function showLoading(message = 'Carregando...') { 
+            document.getElementById('loadingOverlay').classList.add('show'); 
+        }
+        function hideLoading() { 
+            document.getElementById('loadingOverlay').classList.remove('show'); 
+        }
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.querySelector('.content');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `${message}<button class="close-btn" onclick="this.parentElement.remove()">&times;</button>`;
+            alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+            setTimeout(() => { if(alertDiv.parentElement) alertDiv.remove(); }, 5000);
+        }
+        function showConfirm(title, message, callback) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').textContent = message;
+            const confirmBtn = document.getElementById('confirmButton');
+            confirmBtn.onclick = () => {
+                closeModal('confirmModal');
+                callback();
+            };
+            document.getElementById('confirmModal').classList.add('show');
+        }
+        function closeModal(modalId) { 
+            document.getElementById(modalId).classList.remove('show'); 
+        }
+        
+        // --- UTILITÁRIOS PARA FORMULÁRIOS ---
+        function updateBillingSelection(radio) {
+            document.querySelectorAll('.billing-model').forEach(el => el.classList.remove('selected'));
+            radio.closest('.billing-model').classList.add('selected');
+        }
+        
+        function getDataPadrao() {
+            const hoje = new Date();
+            hoje.setDate(hoje.getDate() + 30);
+            return hoje.toISOString().split('T')[0];
+        }
+        
+        function formatarValorParaFrontend(valor) {
+            if (!valor) return '0,00';
+            return parseFloat(valor).toFixed(2).replace('.', ',');
+        }
+        
+        function formatarValorParaBackend(valor) {
+            return valor.replace(',', '.');
+        }
+        
+        // Placeholders para ações dos ativos
+        function toggleAtivoStatus(clientId, isCurrentlyActive) {
+            showConfirm('Alterar Status', `Tem certeza que deseja ${isCurrentlyActive ? 'inativar' : 'ativar'} este ativo?`, async () => {
+                showAlert('Status do ativo alterado.', 'success');
+                loadAtivos();
+            });
+        }
+        
+        function excluirAtivo(clientId) {
+            showConfirm('Excluir Ativo', 'Tem certeza que deseja excluir este ativo?', async () => {
+                showAlert('Ativo excluído.', 'success');
+                loadAtivos();
+            });
+        }
+    </script>
+</body>
+</html>
